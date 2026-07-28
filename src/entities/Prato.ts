@@ -2,10 +2,10 @@ class Prato {
 
     constructor(
         public id: number,
-        public playerId: number,
+        public playerId: string,
         public recipeId: number,
         public estrelas: number,
-        public horaCriada: number
+        public horaCriada: Date
     ) {}
 }
 
