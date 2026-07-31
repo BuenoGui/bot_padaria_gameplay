@@ -1,4 +1,4 @@
-INSERT INTO players(player_id, player_nickname)
+INSERT INTO players(id_player, player_nickname)
 VALUES 
     ('11912345678', 'JOSEFINA'),
     ('11911111111','Carlos eduardo'),
@@ -13,5 +13,5 @@ VALUES
     ('19000000000', 'quase binario');
 
 
-INSERT INTO padarias (player_id)
-VALUES ('11912345678');
+-- INSERT INTO padarias (id_player)
+-- VALUES ('11912345678');

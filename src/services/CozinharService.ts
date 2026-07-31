@@ -17,3 +17,4 @@ export function cozinhar(player: Player) {
 }
 
 console.log(cozinhar(jogador));
+

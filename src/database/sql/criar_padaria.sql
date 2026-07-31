@@ -4,5 +4,5 @@ create TABLE padarias (
     gas_max SMALLINT NOT NULL DEFAULT 100,
     forno_nivel SMALLINT NOT NULL DEFAULT 0,
 
-    FOREIGN KEY (player_id) REFERENCES players(player_id)
+    FOREIGN KEY (id_player) REFERENCES players(id_player)
 )

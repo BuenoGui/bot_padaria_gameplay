@@ -5,5 +5,5 @@ create TABLE inventarios (
     estrelas SMALLINT NOT NULL,
     hora_criada TIMESTAMP NOT NULL,
 
-    FOREIGN KEY (player_id) REFERENCES players(player_id)
+    FOREIGN KEY (id_player) REFERENCES players(id_player)
 )

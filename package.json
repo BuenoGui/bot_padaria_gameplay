@@ -17,7 +17,8 @@
     "undici-types": "^8.3.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db": "npx tsx src/database/init.ts"
   },
   "keywords": [],
   "author": "",
