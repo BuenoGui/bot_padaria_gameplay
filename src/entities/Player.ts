@@ -3,7 +3,7 @@ class Player {
     // Substituir NOME por Tell no futuro
 
     constructor (
-        public playerId: string,
+        public id_player: string,
         public level: number,
         public xp: number,
         public money: number

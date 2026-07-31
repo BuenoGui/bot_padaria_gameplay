@@ -4,8 +4,9 @@ class Receita {
         public id: number,
         public nome: string,
         public raridade: string,
-        public gasNecessario: number,
-        public precoBase: number
+        public gas_necessario: number,
+        public preco_base: number,
+        public chance_venda: number
     ) {}
 
 }

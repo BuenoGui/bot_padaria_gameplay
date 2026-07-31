@@ -2,8 +2,8 @@ class Raridades {
 
     constructor(
         public nome: string,
-        public multiplicadorVenda: number,
-        public gasNecessario: number
+        public multiplicador_venda: number,
+        public gas_necessario: number
     ) {}
 }
 

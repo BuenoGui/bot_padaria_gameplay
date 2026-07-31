@@ -1,15 +1,19 @@
 import Player from "../entities/Player.js"
-import Receita from "../entities/Receita.js"
 import Prato from "../entities/Prato.js"
-import { sortearEstrelas } from "./SorteioService.js"
+import { sortearEstrelas, sortearReceita } from "./SorteioService.js"
 
-export function cozinhar(player: Player, receita: Receita) {
+const jogador = new Player('1191111111', 0, 0, 0)
+
+export function cozinhar(player: Player) {
     const prato01 = new Prato (
         1,
-        player.playerId,
-        receita.id,
+        player.id_player,
+        sortearReceita(),
         sortearEstrelas(),
-        new Date()
+        new Date(),
+        false
     )
     return prato01
 }
+
+console.log(cozinhar(jogador));

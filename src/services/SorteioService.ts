@@ -20,15 +20,15 @@ export function sortearEstrelas(): number {
 
 }
 
-export function sortearReceita(): Receita {
+export function sortearReceita(): number {
 
     if (listaReceitas.length === 0) {
         throw new Error ("A lista de receitas vazias paizão")
     } 
     
-    const indice = Math.floor(Math.random() * listaReceitas.length)
-    const receitaSorteada =  listaReceitas[indice];
+    const receitaSorteada = Math.floor(Math.random() * listaReceitas.length)
  
     return receitaSorteada!
 
 }
+

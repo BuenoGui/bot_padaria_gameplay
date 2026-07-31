@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS inventarios;
+DROP TABLE IF EXISTS padarias;
+DROP TABLE IF EXISTS players;
