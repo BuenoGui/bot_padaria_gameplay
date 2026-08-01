@@ -4,9 +4,10 @@ class Player {
 
     constructor (
         public id_player: string,
+        public nickname: string,
         public level: number,
         public xp: number,
-        public money: number
+        public dinheiro: number
     ) {}
 }
 

@@ -52,9 +52,10 @@ export async function sortearPlayer() {
 
     const jogador_sorteado = new Player (
         objeto_jogador_sorteado.id_player,
+        objeto_jogador_sorteado.nickname,
         objeto_jogador_sorteado.level,
         objeto_jogador_sorteado.xp,
-        Number(objeto_jogador_sorteado.money)
+        Number(objeto_jogador_sorteado.dinheiro)
     );
     
     return jogador_sorteado;

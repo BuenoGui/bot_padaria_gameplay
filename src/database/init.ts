@@ -4,7 +4,8 @@ import pool from "./connection.js"
 const tabelas_sql = [
     "src/database/sql/criar_jogador.sql",
     "src/database/sql/criar_padaria.sql",
-    "src/database/sql/criar_inventario.sql"
+    "src/database/sql/criar_geladeira.sql",
+    "src/database/sql/criar_vitrine.sql"
     
 ]
 
@@ -48,6 +49,8 @@ async function init() {
     console.log("Banco teste criado!")
     console.log("Jogadores criados!")
     console.log("Padarias criadas")
+    
+    // console.log("Geladeiras criadas")
 
     await pool.end();
 }
