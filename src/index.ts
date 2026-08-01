@@ -1,20 +1,8 @@
-import Player from "./entities/Player.js"
+import pool from "./database/connection.js";
 import { cozinhar } from "./services/CozinharService.js";
-import Receita from "./entities/Receita.js";
-import { listaReceitas } from "./data/Receitas.js";
-import { sortearReceita } from "./services/SorteioService.js";
-import client from "./database/connection.js";
+import { sortearPlayer } from "./services/SorteioService.js";
 
-await client.connect();
-console.log("Conectado ao PostgreSQL!");
-await client.end()
+let resultadoTeste01 = await cozinhar(await sortearPlayer());
+console.log(resultadoTeste01);
 
-
-
-
-const player_um = new Player("Pedro", 1, 0, 0);
-console.log(player_um);
-
-    let resultadoTeste01 = cozinhar(player_um)
-    console.log(resultadoTeste01);
-
+await pool.end();

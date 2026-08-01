@@ -1,5 +1,5 @@
 import { readFile } from "fs/promises";
-import client from "./connection.js"
+import pool from "./connection.js"
 
 const tabelas_sql = [
     "src/database/sql/criar_jogador.sql",
@@ -10,16 +10,10 @@ const tabelas_sql = [
 
 const seed_sql = "src/database/sql/seed.sql";
 
-
-const arquivos_base_sql = [
-    "src/database/tests/criar_padarias.ts"
-] 
-
 async function init() {
-    await client.connect();
 
     // RESET SQL
-    await client.query(await readFile(
+    await pool.query(await readFile(
         "src/database/sql/reset.sql",
         "utf-8"
     ))
@@ -28,21 +22,20 @@ async function init() {
     // CRIAR TABELAS
     for(const arquivo of tabelas_sql) {
         const sql = await readFile(arquivo, "utf-8");
-        await client.query(sql);
+        await pool.query(sql);
         console.log(`${arquivo} criado`)
     }
     // 
 
     // SEED
-    await client.query(await readFile(seed_sql, "utf-8"));
+    await pool.query(await readFile(seed_sql, "utf-8"));
     // 
 
-    // CRIAR PADARIAS DOS JOGADORES
-    const todos_jogadores = await client.query("SELECT id_player FROM players")
-
+    // CRIAR PADARIAS
     async function criar_padarias() {
-        for (const jogador of todos_jogadores.rows) {
-            await client.query(`
+        const  id_todos_jogadores = await pool.query("SELECT id_player FROM players");
+        for (const jogador of id_todos_jogadores.rows) {
+            await pool.query(`
                 INSERT INTO padarias (id_player)
                 VALUES (${jogador.id_player}) ON CONFLICT DO NOTHING;
             `);
@@ -54,13 +47,9 @@ async function init() {
 
     console.log("Banco teste criado!")
     console.log("Jogadores criados!")
+    console.log("Padarias criadas")
 
-
-
-
-
-
-    await client.end();
+    await pool.end();
 }
 
 init();

@@ -1,5 +1,6 @@
 import { listaReceitas } from "../data/Receitas.js";
-import type Receita from "../entities/Receita.js";
+import pool from "../database/connection.js";
+import Player from "../entities/Player.js";
 
 export function sortearEstrelas(): number {
     const resultadoEstrelar = Math.floor(Math.random() * 100) + 1;
@@ -32,3 +33,30 @@ export function sortearReceita(): number {
 
 }
 
+export async function sortearPlayer() {
+
+    const id_todos_jogadores = await pool.query("SELECT id_player FROM players");
+
+    if (id_todos_jogadores.rows.length === 0) {
+        throw new Error ("Sem jogadores na base de dados")
+    }
+
+    const index = Math.floor(Math.random() * id_todos_jogadores.rows.length);
+    const id_jogador_sorteado = id_todos_jogadores.rows[index].id_player;
+
+    const dados_jogador_sorteado = await pool.query(
+        `SELECT * FROM players WHERE id_player = $1`,
+        [id_jogador_sorteado]
+    )
+    const objeto_jogador_sorteado = dados_jogador_sorteado.rows[0];
+
+    const jogador_sorteado = new Player (
+        objeto_jogador_sorteado.id_player,
+        objeto_jogador_sorteado.level,
+        objeto_jogador_sorteado.xp,
+        Number(objeto_jogador_sorteado.money)
+    );
+    
+    return jogador_sorteado;
+    
+}
