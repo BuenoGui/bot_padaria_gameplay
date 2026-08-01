@@ -1,10 +1,13 @@
 import { readFile } from "fs/promises";
 import pool from "./connection.js"
+import { cozinhar } from "../services/cozinhar_service.js";
+import { preparar_massa } from "../services/preparar_massa.js";
+import { sortearPlayer} from "../services/sorteio_service.js";
 
 const tabelas_sql = [
     "src/database/sql/criar_jogador.sql",
     "src/database/sql/criar_padaria.sql",
-    "src/database/sql/criar_geladeira.sql",
+    "src/database/sql/criar_geladeiras.sql",
     "src/database/sql/criar_vitrine.sql"
     
 ]
@@ -18,6 +21,7 @@ async function init() {
         "src/database/sql/reset.sql",
         "utf-8"
     ))
+    console.log("reset feito")
     // 
 
     // CRIAR TABELAS
@@ -26,10 +30,12 @@ async function init() {
         await pool.query(sql);
         console.log(`${arquivo} criado`)
     }
+    console.log("tabelas criadas")
     // 
 
     // SEED
     await pool.query(await readFile(seed_sql, "utf-8"));
+    console.log("seed_players plantada")
     // 
 
     // CRIAR PADARIAS
@@ -38,21 +44,36 @@ async function init() {
         for (const jogador of id_todos_jogadores.rows) {
             await pool.query(`
                 INSERT INTO padarias (id_player)
-                VALUES (${jogador.id_player}) ON CONFLICT DO NOTHING;
-            `);
+                VALUES ($1) ON CONFLICT DO NOTHING;`,
+            [jogador.id_player]);
     }
     }
-
     await criar_padarias();
+    console.log("padarias criadas")
     // 
 
-    console.log("Banco teste criado!")
-    console.log("Jogadores criados!")
-    console.log("Padarias criadas")
-    
-    // console.log("Geladeiras criadas")
+    // Criar seed da vitrine e geladeira
+    async function criar_geladeiras() {
+        for(let i = 0 ; i <= 40; i++) {
+            await preparar_massa(await sortearPlayer());
+        }
+    }
+    await criar_geladeiras();
+    console.log("seed geladeiras feita")
 
-    await pool.end();
+    async function criar_vitrine() {
+        for(let i = 0 ; i <= 20; i++) {
+            try { await cozinhar(await sortearPlayer())}
+            catch (error) {
+                // console.error(error)
+            }
+        }
+    }
+    await criar_vitrine();
+    console.log("seed vitrine feita")
+    //
+
+    await pool.end()
 }
 
 init();

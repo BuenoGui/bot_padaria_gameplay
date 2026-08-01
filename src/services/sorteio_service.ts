@@ -21,17 +21,44 @@ export function sortearEstrelas(): number {
 
 }
 
-export function sortearReceita(): number {
+export function sortear_massa_preparo(): number {
 
     if (listaReceitas.length === 0) {
         throw new Error ("A lista de receitas vazias paizão")
     } 
-    
-    const receitaSorteada = Math.floor(Math.random() * listaReceitas.length)
+
+    const rng = Math.floor(Math.random() * 100) + 1;
+
+    let raridade_escolhida: string;
+
+    if(rng > 50) { raridade_escolhida = "incomum" }
+    else {raridade_escolhida = "comum"}
+
+
+    const receitas_raridade_escolhida = listaReceitas.filter(
+        receita => receita.raridade === raridade_escolhida
+    )
+
+    const index_sorteado = Math.floor(Math.random() * receitas_raridade_escolhida.length)
+    const receita_escolhida = receitas_raridade_escolhida[index_sorteado];
+    const id_receita_escolhida = receita_escolhida?.id_receita
  
-    return receitaSorteada!
+    return id_receita_escolhida!
 
 }
+
+export async function sortear_massa_prato(player: Player) {
+
+    const geladeira_player = await pool.query(
+        "SELECT * FROM geladeiras WHERE id_player = $1",
+        [player.id_player]
+    )
+    const massas_geladeira_player = geladeira_player.rows
+    const index_massa_sorteada = Math.floor(Math.random() * massas_geladeira_player.length)
+
+    return massas_geladeira_player[index_massa_sorteada]
+}
+
 
 export async function sortearPlayer() {
 
@@ -61,3 +88,4 @@ export async function sortearPlayer() {
     return jogador_sorteado;
     
 }
+

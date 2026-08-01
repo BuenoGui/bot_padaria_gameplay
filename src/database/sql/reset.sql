@@ -1,4 +1,4 @@
+DROP TABLE IF EXISTS geladeiras;
 DROP TABLE IF EXISTS vitrine;
-DROP TABLE IF EXISTS inventarios;
 DROP TABLE IF EXISTS padarias;
 DROP TABLE IF EXISTS players;
