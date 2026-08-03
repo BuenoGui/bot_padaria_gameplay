@@ -18,14 +18,13 @@ export async function cozinhar(player: Player) {
     const sql_receita_sorteada = await sortear_massa_prato(player);
     const id_sql_receita_sorteada = sql_receita_sorteada.id;
     const id_receita_sorteada = sql_receita_sorteada.id_receita;
-    const receita = listaReceitas[id_receita_sorteada];
+    const receita = listaReceitas[id_receita_sorteada - 1];
     const receita_raridade = receita?.raridade;
     const dados_raridade = listaRaridades.find(
         (raridade) => raridade.nome === receita_raridade 
     )
 
     const gas_necessario = Number(dados_raridade?.gas_necessario)
-
 
     // CHECA SE VOCÊ TEM GÁS PARA COZINHAR A RECEITA
     if(gas_padaria_player >= gas_necessario) {

@@ -54,7 +54,7 @@ async function init() {
 
     // Criar seed da vitrine e geladeira
     async function criar_geladeiras() {
-        for(let i = 0 ; i <= 40; i++) {
+        for(let i = 0 ; i <= 80; i++) {
             await preparar_massa(await sortearPlayer());
         }
     }
@@ -62,7 +62,7 @@ async function init() {
     console.log("seed geladeiras feita")
 
     async function criar_vitrine() {
-        for(let i = 0 ; i <= 20; i++) {
+        for(let i = 0 ; i <= 40; i++) {
             try { await cozinhar(await sortearPlayer())}
             catch (error) {
                 // console.error(error)
