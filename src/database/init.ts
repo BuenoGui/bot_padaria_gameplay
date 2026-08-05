@@ -17,6 +17,20 @@ const tabelas_sql = [
 
 const seed_sql = "src/database/sql/seed.sql";
 
+const conjunto_acoes = [
+    async () => await vender(),
+    async () => await vender(),
+    async () => await vender(),
+    async () => await vender(),
+    async () => await comprar_gas(await sortearPlayer()),
+    async () => await comprar_gas_total(await sortearPlayer()),
+    async () => await preparar_massa(await sortearPlayer()),
+    async () => await preparar_massa(await sortearPlayer()),
+    async () => await preparar_massa(await sortearPlayer()),
+    async () => await await cozinhar(await sortearPlayer()),
+    async () => await await cozinhar(await sortearPlayer()),
+]
+
 async function init() {
 
     // RESET SQL
@@ -54,45 +68,20 @@ async function init() {
     console.log("padarias criadas")
     // 
 
-    // Criar dados para Padarias
-    async function compras_loja() {
-        for(let i = 0; i <= 80; i++) {
-            await comprar_gas(await sortearPlayer())
-            await comprar_gas_total(await sortearPlayer())
-        }
-    }
-
-    compras_loja();
-    console.log("compras feitas")
-    // 
-
-    // Criar seed da vitrine e geladeira
+    // Criar geladeiras
     async function criar_geladeiras() {
-        for(let i = 0 ; i <= 120; i++) {
+        for(let i = 0 ; i <= 600; i++) {
             await preparar_massa(await sortearPlayer());
         }
     }
-    await criar_geladeiras();
-    console.log("seed geladeiras feita")
+    criar_geladeiras();
 
-    async function criar_vitrine() {
-        for(let i = 0 ; i <= 60; i++) {
-            try { await cozinhar(await sortearPlayer())}
-            catch (error) {
-                // console.error(error)
-            }
-        }
-    }
-    await criar_vitrine();
-    console.log("seed vitrine feita")
-    //
+    for (let i = 0; i <= 10000; i++) {
+        const indexes_possiveis = Math.floor(Math.random() * conjunto_acoes.length) - 1
 
-    // VENDAS DE TESTE
-    for(let i = 0; i <= 7; i++) {
-        await vender()
+        await conjunto_acoes[indexes_possiveis]?.()
     }
-    console.log("vendas feitas")
-    // 
+
 
     await pool.end()
 }

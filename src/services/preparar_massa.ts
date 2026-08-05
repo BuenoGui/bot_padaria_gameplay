@@ -10,9 +10,9 @@ export async function preparar_massa(player: Player) {
         "SELECT * FROM padarias WHERE id_player = $1", [player.id_player]
     )
     const padaria_player_dados = padaria_player.rows[0];
-    const espacos_disponiveis = Number(padaria_player_dados.espaco_geladeira);
+    const espacos_geladeira = Number(padaria_player_dados.espaco_geladeira);
     
-    if (espacos_disponiveis >= 15) {
+    if (espacos_geladeira >= 35) {
         console.log("Sua geladeira está cheia! desculpa")
     } else {
         const id_massa_criada = await pool.query(

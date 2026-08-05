@@ -42,9 +42,22 @@ export async function comprar_gas_total(player: Player) {
     )
     const dados_padaria_player = todos_dados_padaria_player.rows[0]
     let gas_total_player = Number(dados_padaria_player.gas_max)
+    const preco_upgrade = Math.floor((gas_total_player / 100) * (8 * gas_total_player / 100))
+
+    if (player.dinheiro < preco_upgrade) {
+        console.log(player.dinheiro, "Sem dinheiro para o upgrade")
+        return
+    }
 
     await pool.query(
         "UPDATE padarias SET gas_max = $1 + 10 WHERE id_player = $2",
-        [gas_total_player, id_player]
+        [gas_total_player, id_player],
     )
+    await pool.query(
+        "UPDATE players SET dinheiro = dinheiro - $1 WHERE id_player = $2",
+        [preco_upgrade, id_player]
+    )
+    
+    console.log(id_player, "Parabens por comprar + 10 de gás total")
+    return
 }
