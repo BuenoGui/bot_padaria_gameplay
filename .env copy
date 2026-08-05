@@ -1,0 +1,5 @@
+DB_HOST= Seu localhost
+DB_PORT= Porta do seu Postgres
+DB_USER= Seu usuario
+DB_PASSWORD= Sua senha
+DB_NAME= Nome do seu database
