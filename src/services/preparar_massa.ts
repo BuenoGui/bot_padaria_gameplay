@@ -19,6 +19,11 @@ export async function preparar_massa(player: Player) {
             "INSERT INTO geladeiras (id_player, id_receita) VALUES ($1, $2) RETURNING id",
             [player.id_player, receita_sorteada]
         )
+
+        await pool.query(
+            "UPDATE padarias SET espaco_geladeira = espaco_geladeira + 1 WHERE id_player = $1 ",
+            [player.id_player]
+        )
         return id_massa_criada
     }
 }
