@@ -73,7 +73,7 @@ async function init() {
 
     // Criar geladeiras
     async function criar_geladeiras() {
-        for(let i = 0 ; i <= 600; i++) {
+        for(let i = 0 ; i <= 200; i++) {
             await preparar_massa(await sortearPlayer());
         }
     }

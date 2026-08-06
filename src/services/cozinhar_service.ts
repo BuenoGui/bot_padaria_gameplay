@@ -14,14 +14,13 @@ export async function cozinhar(player: Player) {
         [player.id_player])
     const dados_padaria_player = (padaria_player).rows[0];
     const gas_padaria_player: number = (dados_padaria_player.gas_atual);
-    const espacos_vitrine = Number(dados_padaria_player.vitrine);
+    const espaco_vitrine = Number(dados_padaria_player.espaco_vitrine);
     const sql_receita_sorteada = await sortear_massa_prato(player);
 
     if(!sql_receita_sorteada) {
         console.log(player.id_player, "Nâo tem massas na geladeira")
         return
     }
-
 
     const id_sql_receita_sorteada = sql_receita_sorteada.id;
     const id_receita_sorteada = sql_receita_sorteada.id_receita;
@@ -35,7 +34,7 @@ export async function cozinhar(player: Player) {
 
 
     // CHECA SUA VITRINE    
-    if(espacos_vitrine >= 50) {
+    if(espaco_vitrine >= 50) {
         console.log(player.id_player, "Sua vitrine está cheia!")
         return
     }
@@ -61,6 +60,12 @@ export async function cozinhar(player: Player) {
         "DELETE FROM geladeiras WHERE id = $1",
         [id_sql_receita_sorteada]
     );
+
+    // ADICIONA CONTADOR A PADARIA
+    await pool.query(
+        "UPDATE padarias SET espaco_vitrine = espaco_vitrine + 1 WHERE id_player = $1",
+        [player.id_player]
+    )
 
     const id_prato_criado = prato_vitrine.rows[0].id;
 
