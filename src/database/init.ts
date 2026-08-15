@@ -11,8 +11,9 @@ const tabelas_sql = [
     "src/database/sql/criar_jogador.sql",
     "src/database/sql/criar_padaria.sql",
     "src/database/sql/criar_geladeiras.sql",
-    "src/database/sql/criar_vitrine.sql"
-    
+    "src/database/sql/criar_vitrine.sql",
+    "src/database/sql/criar_raridades.sql",
+    "src/database/sql/criar_receitas.sql"
 ]
 
 const seed_sql = "src/database/sql/seed.sql";
@@ -73,13 +74,13 @@ async function init() {
 
     // Criar geladeiras
     async function criar_geladeiras() {
-        for(let i = 0 ; i <= 200; i++) {
+        for(let i = 0 ; i <= 1000; i++) {
             await preparar_massa(await sortearPlayer());
         }
     }
     criar_geladeiras();
 
-    for (let i = 0; i <= 10000; i++) {
+    for (let i = 0; i <= 8000; i++) {
         const indexes_possiveis = Math.floor(Math.random() * conjunto_acoes.length) - 1
 
         await conjunto_acoes[indexes_possiveis]?.()

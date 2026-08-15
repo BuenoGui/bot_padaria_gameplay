@@ -1,5 +1,3 @@
-import { listaRaridades } from "../data/Raridades.js";
-import { listaReceitas } from "../data/Receitas.js";
 import { sortearEstrelas, sortear_massa_prato } from "./sorteio_service.js"
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
@@ -10,11 +8,18 @@ export async function cozinhar(player: Player) {
     const data_criada = new Date();
     // CHECA SE VC TEM MASSAS PARA COZINHAR
     const padaria_player = await pool.query(
-        "SELECT * FROM padarias WHERE id_player = $1",
-        [player.id_player])
+        `SELECT * FROM padarias WHERE id_player = $1`,
+        [player.id_player]
+    )
+    const dados_vitrine = await pool.query(
+        `SELECT COUNT(*)::INT AS total
+        FROM vitrine
+        WHERE id_player = $1`,
+        [player.id_player]
+    )
+    const espaco_vitrine = dados_vitrine.rows[0].total
     const dados_padaria_player = (padaria_player).rows[0];
     const gas_padaria_player: number = (dados_padaria_player.gas_atual);
-    const espaco_vitrine = Number(dados_padaria_player.espaco_vitrine);
     const sql_receita_sorteada = await sortear_massa_prato(player);
 
     if(!sql_receita_sorteada) {
@@ -24,14 +29,21 @@ export async function cozinhar(player: Player) {
 
     const id_sql_receita_sorteada = sql_receita_sorteada.id;
     const id_receita_sorteada = sql_receita_sorteada.id_receita;
-    const receita = listaReceitas[id_receita_sorteada - 1];
-    const receita_raridade = receita?.raridade;
-    const dados_raridade = listaRaridades.find(
-        (raridade) => raridade.nome === receita_raridade 
+    const lista_receitas_sql = await pool.query(`
+    SELECT * FROM receitas
+    `)
+    const lista_receitas = lista_receitas_sql.rows
+    const receita_sorteada = lista_receitas[id_receita_sorteada - 1];
+    const raridade_receita_sorteada = receita_sorteada?.raridade;
+    const lista_raridades_sql = await pool.query(`
+    SELECT * FROM raridades
+    `)
+    const lista_raridades = lista_raridades_sql.rows
+    const dados_raridade = lista_raridades.find(
+        (raridade) => raridade.nome === raridade_receita_sorteada 
     )
 
     const gas_necessario = Number(dados_raridade?.gas_necessario)
-
 
     // CHECA SUA VITRINE    
     if(espaco_vitrine >= 50) {
@@ -51,21 +63,15 @@ export async function cozinhar(player: Player) {
 
     // ADICIONA PRATO CRIADO A VITRINE
     const prato_vitrine = await pool.query(
-        "INSERT INTO vitrine (id_player, id_receita, estrelas, hora_criada) VALUES ($1 , $2, $3, $4) RETURNING id",
+        "INSERT INTO vitrine (id_player, id_receita, estrelas, hora_criada) VALUES ($1 , $2, $3, $4) RETURNING id_vitrine",
         [player.id_player, id_receita_sorteada, estrela_sorteada, data_criada]
     )
 
     // REMOVE MASSA DO INVENTARIO DO JOGADOR
     await pool.query(
-        "DELETE FROM geladeiras WHERE id = $1",
+        "DELETE FROM geladeiras WHERE id_geladeira = $1",
         [id_sql_receita_sorteada]
     );
-
-    // ADICIONA CONTADOR A PADARIA
-    await pool.query(
-        "UPDATE padarias SET espaco_vitrine = espaco_vitrine + 1 WHERE id_player = $1",
-        [player.id_player]
-    )
 
     const id_prato_criado = prato_vitrine.rows[0].id;
 

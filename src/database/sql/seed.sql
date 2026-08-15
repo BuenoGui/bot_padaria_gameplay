@@ -1,4 +1,4 @@
-INSERT INTO players(id_player, player_nickname)
+INSERT INTO players (tell, nickname)
 VALUES 
     ('11912345678', 'JOSEFINA'),
     ('11911111111','Carlos eduardo'),
@@ -22,8 +22,3 @@ VALUES
     ('19111111110', 'IRA!!!!!!!!!!!!!!'),
     ('19111111122', '19111111110'),
     ('19111111133', '19111111113');
-
-
-
--- INSERT INTO padarias (id_player)
--- VALUES ('11912345678');

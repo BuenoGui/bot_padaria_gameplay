@@ -1,4 +1,4 @@
-import client from "./connection.js";
+import client from "../connection.js";
 
 async function imprimir() {
     await client.connect();

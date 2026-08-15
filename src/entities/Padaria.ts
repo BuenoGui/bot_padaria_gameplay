@@ -5,8 +5,6 @@ class Padaria {
         public gas_atual: number,
         public gas_max: number,
         public forno_nivel: number,
-        public vitrine: number,
-        public espaco_geladeira: number
     ){}
 }
 
