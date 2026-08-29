@@ -1,19 +1,29 @@
-import { listaRaridades } from "../data/Raridades.js";
-import { listaReceitas } from "../data/Receitas.js";
 import pool from "../database/connection.js";
+import { dinheiro_venda } from "../utils/Formulas.js";
 
 export async function vender() {
     const vitrine = await pool.query(
-    "SELECT * FROM vitrine")
+        `SELECT * FROM vitrine`
+    )
     const dados_vitrine = vitrine.rows
+
+    const lista_receitas_sql = await pool.query(`
+        SELECT * FROM receitas`
+    )
+    const lista_receitas = lista_receitas_sql.rows
+
+    const lista_raridades_sql = await pool.query(`
+        SELECT * FROM raridades`
+    )
+    const lista_raridades = lista_raridades_sql.rows
 
     for(const prato of dados_vitrine) {
 
         // DADOS DO PRATO ATUAL
         const id_prato = prato.id_receita;
-        const dados_prato = listaReceitas[id_prato];
+        const dados_prato = lista_receitas[id_prato];
         const raridade_prato = dados_prato?.raridade;
-        const prato_feito = listaRaridades.find(raridade => raridade.nome === raridade_prato);
+        const prato_feito = lista_raridades.find(raridade => raridade.nome === raridade_prato);
         const chance_venda = Number(prato_feito?.chance_venda);
         
         // DADOS LÓGICA VENDA
@@ -26,7 +36,7 @@ export async function vender() {
         const id_player = prato.id_player;
 
         // dados SQL
-        const id_prato_vendido = prato.id
+        const id_prato_vendido = prato.id_vitrine
 
         // mecanica hora
         // const horas recebe uma hora
@@ -43,17 +53,15 @@ export async function vender() {
         // essa lógica tá escrita de um jeito esquisita mas eu juro que funciona
         if (chance_compra <= chance_venda) {
 
-            const dinheiro_recebido = Number(((preco_base * preco_raridade) * (estrela_prato * 1.4)).toFixed(2))
-
             // ATUALIZAR DINHEIRO PLAYER
             await pool.query(
                 "UPDATE players SET dinheiro = dinheiro + $1 WHERE id_player = $2",
-                [dinheiro_recebido, id_player]
+                [dinheiro_venda(preco_base, preco_raridade, estrela_prato), id_player]
             )
 
             // REMOVER PRATO DA VITRINE
             await pool.query (
-                "DELETE FROM vitrine where id = $1 ",
+                "DELETE FROM vitrine where id_vitrine = $1 ",
                 [id_prato_vendido]
             )
 

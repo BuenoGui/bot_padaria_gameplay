@@ -1,5 +1,6 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
+import { preco_gas_total } from "../utils/Formulas.js";
 
 export async function comprar_gas(player: Player) {
 
@@ -40,10 +41,9 @@ export async function comprar_gas_total(player: Player) {
     )
     const dados_padaria_player = todos_dados_padaria_player.rows[0]
     let gas_total_player = Number(dados_padaria_player.gas_max)
-    const preco_upgrade = Math.floor((gas_total_player / 20) * (8 * gas_total_player / 100))
 
     // Checa dinheiro
-    if (player.dinheiro < preco_upgrade) {
+    if (player.dinheiro < preco_gas_total(gas_total_player)) {
         console.log(player.dinheiro, "Sem dinheiro para o upgrade")
         return
     }
@@ -61,12 +61,14 @@ export async function comprar_gas_total(player: Player) {
     // Diminui dinheiro
     await pool.query(
         "UPDATE players SET dinheiro = dinheiro - $1 WHERE id_player = $2",
-        [preco_upgrade, player.id_player]
+        [preco_gas_total(gas_total_player), player.id_player]
     )
     
     console.log(player.id_player, "Parabens por comprar + 10 de gás total")
     return
 }
+
+
 
 // export async function melhoria_geladeira(player:Player) {
 //     const id_player = player.id_player

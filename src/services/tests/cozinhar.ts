@@ -23,6 +23,17 @@ export async function cozinhar(player: Player) {
     const gas_padaria_player: number = (dados_padaria_player.gas_atual);
     const sql_receita_sorteada = await sortear_massa_prato(player);
 
+    const dados_receitas_sql = await pool.query(
+        `SELECT * FROM receitas`
+    )
+    const receitas_sql = dados_receitas_sql.rows
+
+    const dados_raridade_sql = await pool.query(
+        `SELECT * FROM raridades`
+    )
+    const dados_raridade = dados_raridade_sql.rows
+
+
     if(!sql_receita_sorteada) {
         console.log(player.id_player, "Nâo tem massas na geladeira")
         return
@@ -30,15 +41,13 @@ export async function cozinhar(player: Player) {
 
     const id_sql_receita_sorteada = sql_receita_sorteada.id;
     const id_receita_sorteada = sql_receita_sorteada.id_receita;
-    const receita_sorteada = listaReceitas[id_receita_sorteada - 1];
+    const receita_sorteada = receitas_sql[id_receita_sorteada - 1];
     const raridade_receita_sorteada = receita_sorteada?.raridade;
-    const dados_raridade = listaRaridades.find(
+    const dados_raridade_sorteada = dados_raridade.find(
         (raridade) => raridade.nome === raridade_receita_sorteada 
     )
 
-    const gas_necessario = Number(dados_raridade?.gas_necessario)
-
-    console.log(dados_raridade)
+    const gas_necessario = Number(dados_raridade_sorteada?.gas_necessario)
 
     // CHECA SUA VITRINE    
     if(espaco_vitrine >= 50) {

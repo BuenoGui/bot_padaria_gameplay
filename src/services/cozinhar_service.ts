@@ -39,11 +39,11 @@ export async function cozinhar(player: Player) {
     SELECT * FROM raridades
     `)
     const lista_raridades = lista_raridades_sql.rows
-    const dados_raridade = lista_raridades.find(
+    const dados_raridade_sorteada = lista_raridades.find(
         (raridade) => raridade.nome === raridade_receita_sorteada 
     )
 
-    const gas_necessario = Number(dados_raridade?.gas_necessario)
+    const gas_necessario = Number(dados_raridade_sorteada?.gas_necessario)
 
     // CHECA SUA VITRINE    
     if(espaco_vitrine >= 50) {

@@ -1,7 +1,5 @@
 class Player {
 
-    // Substituir NOME por Tell no futuro
-
     constructor (
         public id_player: string,
         public tell: string,

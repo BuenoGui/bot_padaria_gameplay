@@ -23,14 +23,13 @@ const conjunto_acoes = [
     async () => await vender(),
     async () => await vender(),
     async () => await vender(),
-    async () => await vender(),
-    async () => await vender(),
-    async () => await vender(),
+    async () => await comprar_gas(await sortearPlayer()),
+    async () => await comprar_gas(await sortearPlayer()),
+    async () => await comprar_gas(await sortearPlayer()),
     async () => await comprar_gas(await sortearPlayer()),
     async () => await comprar_gas_total(await sortearPlayer()),
     async () => await preparar_massa(await sortearPlayer()),
     async () => await preparar_massa(await sortearPlayer()),
-    async () => await await cozinhar(await sortearPlayer()),
     async () => await await cozinhar(await sortearPlayer()),
     async () => await await cozinhar(await sortearPlayer()),
 ]
@@ -78,9 +77,9 @@ async function init() {
             await preparar_massa(await sortearPlayer());
         }
     }
-    criar_geladeiras();
+    await criar_geladeiras();
 
-    for (let i = 0; i <= 8000; i++) {
+    for (let i = 0; i <= 10000; i++) {
         const indexes_possiveis = Math.floor(Math.random() * conjunto_acoes.length) - 1
 
         await conjunto_acoes[indexes_possiveis]?.()
