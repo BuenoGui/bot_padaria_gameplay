@@ -1,16 +1,52 @@
 import { sortearEstrelas, sortear_massa_prato } from "./sorteio_service.js"
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
+import { get_capacidade_vitrine } from "../utils/Formulas.js";
 
 export async function cozinhar(player: Player) {
 
     const estrela_sorteada = sortearEstrelas();
     const data_criada = new Date();
+
     // CHECA SE VC TEM MASSAS PARA COZINHAR
-    const padaria_player = await pool.query(
-        `SELECT * FROM padarias WHERE id_player = $1`,
+    const sql_receita_sorteada = await sortear_massa_prato(player)
+
+    if(!sql_receita_sorteada) {
+        console.log(player.id_player, "Nâo tem massas na geladeira")
+        return console.log("Sem receitas na geladeira")
+    }
+
+    const id_sql_receita_sorteada = sql_receita_sorteada.id;
+    const id_receita_sorteada = sql_receita_sorteada.id_receita;
+
+    // CONSULTAS AO BANCO 
+    const padaria_player = await pool.query(`
+        SELECT *
+        FROM padarias
+        WHERE id_player
+        = $1
+        `,
         [player.id_player]
     )
+    const dados_padaria_player = (padaria_player).rows[0]
+    const gas_padaria_player: number = (dados_padaria_player.gas_atual)
+
+    const lista_receitas_sql = await pool.query(`
+        SELECT * FROM receitas
+    `)
+    const lista_receitas = lista_receitas_sql.rows
+    const receita_sorteada = lista_receitas[id_receita_sorteada - 1];
+    const raridade_receita_sorteada = receita_sorteada?.raridade;
+
+    const lista_raridades_sql = await pool.query(`
+        SELECT * FROM raridades
+    `)
+    const lista_raridades = lista_raridades_sql.rows
+    const dados_raridade_sorteada = lista_raridades.find(
+        (raridade) => raridade.nome === raridade_receita_sorteada 
+    )
+    const gas_necessario = Number(dados_raridade_sorteada?.gas_necessario)
+
     const dados_vitrine = await pool.query(
         `SELECT COUNT(*)::INT AS total
         FROM vitrine
@@ -18,35 +54,18 @@ export async function cozinhar(player: Player) {
         [player.id_player]
     )
     const espaco_vitrine = dados_vitrine.rows[0].total
-    const dados_padaria_player = (padaria_player).rows[0];
-    const gas_padaria_player: number = (dados_padaria_player.gas_atual);
-    const sql_receita_sorteada = await sortear_massa_prato(player);
-
-    if(!sql_receita_sorteada) {
-        console.log(player.id_player, "Nâo tem massas na geladeira")
-        return
-    }
-
-    const id_sql_receita_sorteada = sql_receita_sorteada.id;
-    const id_receita_sorteada = sql_receita_sorteada.id_receita;
-    const lista_receitas_sql = await pool.query(`
-    SELECT * FROM receitas
-    `)
-    const lista_receitas = lista_receitas_sql.rows
-    const receita_sorteada = lista_receitas[id_receita_sorteada - 1];
-    const raridade_receita_sorteada = receita_sorteada?.raridade;
-    const lista_raridades_sql = await pool.query(`
-    SELECT * FROM raridades
-    `)
-    const lista_raridades = lista_raridades_sql.rows
-    const dados_raridade_sorteada = lista_raridades.find(
-        (raridade) => raridade.nome === raridade_receita_sorteada 
+    
+    const dados_upgrade_sql = await pool.query(
+        `SELECT * FROM upgrades WHERE id_player = $1`,
+        [player.id_player]
     )
+    const dados_upgrade = dados_upgrade_sql.rows[0]
+    const nivel_vitrine = dados_upgrade.nivel_vitrine
 
-    const gas_necessario = Number(dados_raridade_sorteada?.gas_necessario)
+    // VALIDAÇÕES
 
     // CHECA SUA VITRINE    
-    if(espaco_vitrine >= 50) {
+    if (espaco_vitrine >= get_capacidade_vitrine(nivel_vitrine)) {
         console.log(player.id_player, "Sua vitrine está cheia!")
         return
     }
@@ -61,6 +80,8 @@ export async function cozinhar(player: Player) {
             [gas_necessario, player.id_player]);
     }
 
+    // ATUALIZAÇÕES NO BANCO
+
     // ADICIONA PRATO CRIADO A VITRINE
     const prato_vitrine = await pool.query(
         "INSERT INTO vitrine (id_player, id_receita, estrelas, hora_criada) VALUES ($1 , $2, $3, $4) RETURNING id_vitrine",
@@ -73,7 +94,7 @@ export async function cozinhar(player: Player) {
         [id_sql_receita_sorteada]
     );
 
-    const id_prato_criado = prato_vitrine.rows[0].id;
+    const id_prato_criado = prato_vitrine.rows[0].id_vitrine;
 
     return id_prato_criado
 }

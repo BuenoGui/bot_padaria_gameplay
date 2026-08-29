@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS upgrades;
 DROP TABLE IF EXISTS geladeiras;
 DROP TABLE IF EXISTS vitrine;
 DROP TABLE IF EXISTS padarias;
