@@ -1,4 +1,4 @@
-create TABLE vitrine (
+create TABLE vitrines (
     id_vitrine INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_player INT NOT NULL,
     id_receita INT NOT NULL,

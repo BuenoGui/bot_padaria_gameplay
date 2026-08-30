@@ -1,9 +1,9 @@
 import pool from "../database/connection.js";
-import { dinheiro_venda } from "../utils/Formulas.js";
+import { dinheiro_venda, sortInt } from "../utils/Formulas.js";
 
 export async function vender() {
     const vitrine = await pool.query(
-        `SELECT * FROM vitrine`
+        `SELECT * FROM vitrines`
     )
     const dados_vitrine = vitrine.rows
 
@@ -42,10 +42,10 @@ export async function vender() {
         // const horas recebe uma hora
         const horas = (Date.now() - new Date(hora_prato).getTime()) / (1000 * 60 *60)
 
-        let chance_compra = Math.floor(Math.random() * 100) + 1
+        let chance_compra = sortInt(0, 100)
 
         // MECANICA DE PERDER ESTRELA AO LONGO DO TEMPO
-        if (horas >= 2) {
+        if (horas >= 1) {
             estrela_prato = 1
             chance_compra = 0
         }
@@ -61,7 +61,7 @@ export async function vender() {
 
             // REMOVER PRATO DA VITRINE
             await pool.query (
-                "DELETE FROM vitrine where id_vitrine = $1 ",
+                "DELETE FROM vitrines where id_vitrine = $1 ",
                 [id_prato_vendido]
             )
 

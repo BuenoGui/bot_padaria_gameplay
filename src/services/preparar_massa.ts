@@ -1,7 +1,7 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
 import { sortear_massa_preparo } from "./sorteio_service.js";
-import { capacidade_geladeira } from "../utils/Formulas.js";
+import { get_capacidade_geladeira } from "../utils/Formulas.js";
 
 export async function preparar_massa(player: Player) {
     
@@ -22,7 +22,7 @@ export async function preparar_massa(player: Player) {
     const nivel_geladeira = dados_upgrade.nivel_geladeira
 
 
-    if (espacos_geladeira >= capacidade_geladeira(nivel_geladeira)) {
+    if (espacos_geladeira >= get_capacidade_geladeira(nivel_geladeira)) {
         console.log(`Sua geladeira está cheia! desculpa`)
         return
     } else {

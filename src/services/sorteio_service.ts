@@ -1,10 +1,7 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
+import { get_receitas_raridade_sorteada, sortInt } from "../utils/Formulas.js";
 
-
-function sortInt (min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min
-}
 
 export function sortearEstrelas(): number {
     const resultadoEstrelar = sortInt(0, 100)
@@ -27,30 +24,28 @@ export function sortearEstrelas(): number {
 
 export async function sortear_massa_preparo() {
 
-const lista_receitas_sql = await pool.query(`
-    SELECT * FROM receitas
-`)
+    const rng = sortInt(0, 100);
 
-const todas_receitas = lista_receitas_sql.rows
+    let raridade_sorteada: string = ""
 
-    if (todas_receitas.length === 0) {
+    if (rng < 40) { 
+        raridade_sorteada = "Comum" 
+    } else if (rng < 70) { 
+        raridade_sorteada = "Incomum"
+    } else if(rng < 90 ) { 
+        raridade_sorteada = "Raro"
+    } else {
+        raridade_sorteada = "Épico"
+    }
+
+    const receitas_raridade_sorteada = await get_receitas_raridade_sorteada(raridade_sorteada)
+
+    if (receitas_raridade_sorteada.length === 0) {
         throw new Error ("A lista de receitas vazias paizão")
     } 
 
-    const rng = sortInt(0, 100);
-
-    let raridade_escolhida: string;
-
-    if(rng > 50) { raridade_escolhida = "Incomum" }
-    else {raridade_escolhida = "Comum"}
-
-
-    const receitas_com_raridade = todas_receitas.filter(
-        receita => receita.raridade === raridade_escolhida
-    )
-
-    const index_sorteado = sortInt(0, receitas_com_raridade.length - 1)
-    const receita_escolhida = receitas_com_raridade[index_sorteado]
+    const index_sorteado = sortInt(0, receitas_raridade_sorteada.length - 1)
+    const receita_escolhida = receitas_raridade_sorteada[index_sorteado]
     const id_receita_escolhida = receita_escolhida?.id_receita
  
     return id_receita_escolhida!
@@ -72,7 +67,6 @@ export async function sortear_massa_prato(player: Player) {
 
     return massas_geladeira_player[index_massa_sorteada]
 }
-
 
 export async function sortearPlayer() {
 
@@ -103,4 +97,3 @@ export async function sortearPlayer() {
     return jogador_sorteado;
     
 }
-
