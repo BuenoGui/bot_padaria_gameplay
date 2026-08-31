@@ -38,8 +38,8 @@ export async function cozinhar(player: Player) {
         const gas_atual = await get_gas_atual(player)
         if (gas_atual < gas_receita_sorteada) {
             return console.log(player.id_player, "Sem gás para a receita")
-        } else {
-            await pool.query(
+        } 
+        await pool.query(
             `UPDATE padarias
             SET gas_atual 
             = gas_atual - $1 
@@ -48,7 +48,7 @@ export async function cozinhar(player: Player) {
             [gas_receita_sorteada,
             player.id_player]
         );
-        }
+        
 
         // CRIA PRATO
         const id_prato_vitrine = await pool.query(

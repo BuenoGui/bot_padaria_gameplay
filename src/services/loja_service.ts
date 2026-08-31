@@ -4,7 +4,7 @@ import {
     set_preco_vitrine, set_preco_geladeira, get_gas_maximo, 
     set_preco_gas_total, get_nivel_vitrine, get_nivel_forno, 
     set_preco_forno, get_gas_atual, get_nivel_gas,
-    get_nivel_geladeira
+    get_nivel_geladeira, get_nivel_rolo, set_preco_rolo
     } 
     from "../utils/Formulas.js";
 
@@ -95,7 +95,7 @@ export async function melhorar_geladeira(player:Player) {
     let preco_upgrade = set_preco_geladeira(nivel_geladeira)
 
     if (player.dinheiro < preco_upgrade) {
-        return console.log("Player sem dinheiro pro Upgrade da geladeira")
+        return console.log(player.id_player, "Player sem dinheiro pro Upgrade da geladeira")
     }
 
     // Atualiza upgrades
@@ -159,6 +159,40 @@ export async function melhorar_vitrine(player:Player) {
 
     return (player.id_player ,"Você acaba de comprar +2 espaços pra sua vitrine!")
 
+}
+
+export async function melhorar_rolo(player:Player) {
+        const nivel_rolo = await get_nivel_rolo(player)
+    let preco_upgrade = set_preco_rolo(nivel_rolo)
+
+    if (player.dinheiro < preco_upgrade) {
+        return console.log(player.id_player, "Player sem dinheiro pro Upgrade do rolo")
+    }
+
+    // Atualiza upgrades
+    await pool.query (`
+        UPDATE upgrades
+        SET nivel_rolo
+        = nivel_rolo + 1
+        WHERE id_player
+        = $1`,
+        [player.id_player]
+    )
+
+    // Diminui dinheiro
+    await pool.query(
+        `UPDATE players
+        SET dinheiro = 
+        dinheiro - $1
+        WHERE id_player
+        = $2`,
+        [
+        preco_upgrade,
+        player.id_player
+        ]
+    )
+
+    return (player.id_player ,"Você acaba de comprar +1 rolo para massas!!")
 }
 
 export async function melhorar_forno(player:Player) {

@@ -32,6 +32,9 @@ export async function vender() {
         const hora_prato = prato.hora_criada;
         let estrela_prato = prato.estrelas;
 
+        let dinheiro_recebido = dinheiro_venda(preco_base, preco_raridade, estrela_prato)
+
+
         // dar dinheiro ao player
         const id_player = prato.id_player;
 
@@ -56,7 +59,7 @@ export async function vender() {
             // ATUALIZAR DINHEIRO PLAYER
             await pool.query(
                 "UPDATE players SET dinheiro = dinheiro + $1 WHERE id_player = $2",
-                [dinheiro_venda(preco_base, preco_raridade, estrela_prato), id_player]
+                [dinheiro_recebido, id_player]
             )
 
             // REMOVER PRATO DA VITRINE
@@ -68,6 +71,10 @@ export async function vender() {
 
 
             // VENDIDO
+
+            console.log(id_player, "recebeu", dinheiro_recebido,"ao vender um prato: " , prato_feito.nome)
+
+
         } else {
             // NADA AINDA
         }

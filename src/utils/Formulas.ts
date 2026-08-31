@@ -25,6 +25,8 @@ export function get_capacidade_forno (nivel_forno: number) {
 }
 
 
+
+
 // CONSULTAS SQL
 
 export async function get_pratos_vitrine_atual(player: Player) {
@@ -40,6 +42,70 @@ export async function get_pratos_vitrine_atual(player: Player) {
     const espaco_vitrine = dados_contagem_vitrine.rows[0].total
 
     return espaco_vitrine
+}
+
+export async function get_receita_nome(id_receita: number) {
+    
+    const receita_nome_obj = await pool.query(`
+        SELECT nome
+        FROM receitas
+        WHERE id_receita
+        = $1 
+        `,
+        [id_receita])
+
+        const { nome } = receita_nome_obj.rows[0]
+        return nome
+}
+
+export async function get_raridade_receita(id_receita: number) {
+    
+    const raridade_nome_obj = await pool.query(`
+        SELECT raridade
+        FROM receitas
+        WHERE id_receita
+        = $1 
+        `,
+        [id_receita])
+
+        const { raridade } = raridade_nome_obj.rows[0]
+        return raridade
+}
+
+export async function get_xp_raridade(raridade_nome: string) {
+    const xp_raridade_obj = await pool.query(`
+        SELECT xp_raridade
+        FROM raridades
+        WHERE nome
+        = $1`,
+        [raridade_nome])
+
+        const { xp_raridade } = xp_raridade_obj.rows[0]
+        return xp_raridade  
+}
+
+export async function get_xp_player(player: Player) {
+    const xp_player_obj = await pool.query(`
+        SELECT xp
+        FROM players
+        WHERE id_player
+        = $1`, [player.id_player]
+    )
+
+    const { xp } = xp_player_obj.rows[0]
+    return xp
+}
+
+export async function get_level_player(player: Player) {
+    const level_player_obj = await pool.query(`
+        SELECT level
+        FROM players
+        WHERE id_player
+        = $1`, [player.id_player]
+    )
+
+    const { level } = level_player_obj.rows[0]
+    return level
 }
 
 export async function get_dados_upgrade(player:Player) {
@@ -86,6 +152,18 @@ export async function get_nivel_vitrine(player:Player) {
 
     const { nivel_vitrine } = nivel_vitrine_obj.rows[0]
     return nivel_vitrine
+}
+
+export async function get_nivel_rolo(player:Player) {
+        const nivel_rolo_obj = await pool.query(`
+        SELECT nivel_rolo
+        FROM upgrades
+        WHERE id_player
+        = $1`, [player.id_player]
+    )
+
+    const { nivel_rolo } = nivel_rolo_obj.rows[0]
+    return nivel_rolo
 }
 
 export async function get_nivel_forno(player:Player) {
@@ -165,6 +243,24 @@ export async function get_receitas_raridade_sorteada(raridade_nome: string) {
 
 }
 
+export async function get_quantidade_geladeira_atual(player:Player) {
+    
+    const total_geladeira_obj = await pool.query(`
+        SELECT COUNT(*)::INT AS total
+        FROM geladeiras
+        WHERE id_player = $1`,
+        [player.id_player]
+    )
+
+    const  total_geladeira  = total_geladeira_obj.rows[0]
+    return total_geladeira
+
+
+
+
+
+    
+}
 
 
 
@@ -172,19 +268,42 @@ export async function get_receitas_raridade_sorteada(raridade_nome: string) {
 // PREÇOS
 
 export function set_preco_gas_total(gas_total_player: number) {
-     return Math.floor((gas_total_player / 20) * 8 * (gas_total_player / 80))
-}
-
-export function set_preco_forno(nivel_forno: number) {
-    return (nivel_forno * 18) * (nivel_forno * 15)
+    return Math.floor((gas_total_player / 20) * 8 * (gas_total_player / 80))
 }
 
 export function set_preco_geladeira(nivel_geladeira: number) {
-    return Math.round((nivel_geladeira * 25) * ((nivel_geladeira + 10) / 5))
+    return (nivel_geladeira ** 2) * (nivel_geladeira *20)
 }
 
-export function set_preco_vitrine(nivel_geladeira: number) {
-    return Math.round((nivel_geladeira * 20) * ((nivel_geladeira + 14) / 2))
+export function set_preco_vitrine(nivel_vitrine: number) {
+    return (nivel_vitrine ** 3) * ((nivel_vitrine * 3) + 62)
+}
+
+export function set_preco_rolo(nivel_rolo: number) {
+    return nivel_rolo ** 7 + (nivel_rolo * 15) * (nivel_rolo * 15)
+}
+
+export function set_preco_forno(nivel_forno: number) {
+    return (nivel_forno * 20) + ((nivel_forno*35) * ((nivel_forno*4)**2))
+}
+
+
+// XP
+
+export function set_xp_rankup(level_player: number) {
+    return (1 + level_player * 759) 
+}
+
+export function set_xp_cozinhar(xp_recebido: number) {
+    return  xp_recebido * 2
+}
+
+export function set_xp_preparar(xp_recebido: number) {
+    return  xp_recebido * 4 
+}
+
+export function set_xp_vender(xp_recebido: number) {
+    return xp_recebido
 }
 
 
@@ -198,6 +317,44 @@ export function dinheiro_venda(preco_base: number, preco_raridade: number, estre
 
 
 
+export async function atualizar_xp(player:Player, xp_recebido: number) {
+
+    const xp_player = await get_xp_player(player)
+    const level_player = await get_level_player(player)
+    const xp_rankup = set_xp_rankup(level_player)
+    if ((xp_recebido + xp_player) > xp_rankup) {
+        // atualiza xp
+        let xp_restante =  (xp_recebido + xp_player) - xp_rankup
+        await pool.query(`
+            UPDATE players
+            SET xp
+            = $1
+            WHERE id_player
+            = $2`,
+            [xp_restante, player.id_player])
+
+        // Upa nivel
+        await pool.query(`
+            UPDATE players
+            SET level
+            = level + 1
+            WHERE id_player
+            = $1`,
+            [player.id_player])
+
+            return console.log(player.id_player, "Subiu de nivel")
+    }
+    await pool.query(`
+        UPDATE players
+        SET xp = 
+        xp + $1
+        WHERE id_player
+        = $2`,
+        [xp_recebido, player.id_player])
+
+    console.log(player.id_player, "Recebeu +", xp_recebido ," XP")
+
+}
 
 
 
