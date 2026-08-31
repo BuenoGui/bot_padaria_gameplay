@@ -1,5 +1,5 @@
 import pool from "../database/connection.js";
-import { dinheiro_venda, sortInt } from "../utils/Formulas.js";
+import { atualizar_xp, construir_player, dinheiro_venda, get_raridade_receita, get_xp_raridade, set_xp_cozinhar, sortInt } from "../utils/Formulas.js";
 
 export async function vender() {
     const vitrine = await pool.query(
@@ -20,8 +20,12 @@ export async function vender() {
     for(const prato of dados_vitrine) {
 
         // DADOS DO PRATO ATUAL
-        const id_prato = prato.id_receita;
-        const dados_prato = lista_receitas[id_prato];
+        const id_receita = prato.id_receita;
+        const dados_prato = lista_receitas[id_receita];
+
+        const id_player = prato.id_player;
+        const player = await construir_player(id_player)
+
         const raridade_prato = dados_prato?.raridade;
         const prato_feito = lista_raridades.find(raridade => raridade.nome === raridade_prato);
         const chance_venda = Number(prato_feito?.chance_venda);
@@ -34,9 +38,10 @@ export async function vender() {
 
         let dinheiro_recebido = dinheiro_venda(preco_base, preco_raridade, estrela_prato)
 
+        const receita_raridade = await get_raridade_receita(id_receita)
+        const xp_raridade = await get_xp_raridade(receita_raridade)
+        const xp_recebido = set_xp_cozinhar(xp_raridade)
 
-        // dar dinheiro ao player
-        const id_player = prato.id_player;
 
         // dados SQL
         const id_prato_vendido = prato.id_vitrine
@@ -73,7 +78,7 @@ export async function vender() {
             // VENDIDO
 
             console.log(id_player, "recebeu", dinheiro_recebido,"ao vender um prato: " , prato_feito.nome)
-
+            atualizar_xp(player , xp_recebido)
 
         } else {
             // NADA AINDA

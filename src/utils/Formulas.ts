@@ -1,5 +1,5 @@
 import pool from "../database/connection.js"
-import type Player from "../entities/Player.js"
+import Player from "../entities/Player.js"
 
 // SORT INT
 
@@ -81,7 +81,7 @@ export async function get_xp_raridade(raridade_nome: string) {
         [raridade_nome])
 
         const { xp_raridade } = xp_raridade_obj.rows[0]
-        return xp_raridade  
+        return xp_raridade
 }
 
 export async function get_xp_player(player: Player) {
@@ -262,6 +262,30 @@ export async function get_quantidade_geladeira_atual(player:Player) {
     
 }
 
+export async function construir_player(id_player: number) {
+    const dados_player_sql = await pool.query(`
+        SELECT * 
+        FROM players
+        WHERE id_player
+        = $1`,
+        [id_player]
+        )
+
+    const dados_player = dados_player_sql.rows[0]
+
+    const player = new Player (
+        dados_player.id_player,
+        dados_player.tell,
+        dados_player.nickname,
+        dados_player.level,
+        dados_player.xp,
+        dados_player.dinheiro
+    )
+    
+    return player
+
+}
+
 
 
 
@@ -291,7 +315,7 @@ export function set_preco_forno(nivel_forno: number) {
 // XP
 
 export function set_xp_rankup(level_player: number) {
-    return (1 + level_player * 759) 
+    return (24 + level_player * 755) 
 }
 
 export function set_xp_cozinhar(xp_recebido: number) {
@@ -352,7 +376,7 @@ export async function atualizar_xp(player:Player, xp_recebido: number) {
         = $2`,
         [xp_recebido, player.id_player])
 
-    console.log(player.id_player, "Recebeu +", xp_recebido ," XP")
+    console.log(player.id_player, "Recebeu +", xp_recebido ,"XP")
 
 }
 

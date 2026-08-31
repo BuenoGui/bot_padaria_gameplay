@@ -87,7 +87,7 @@ async function init() {
     await criar_upgrades();
     console.log("uprades definidos")
 
-    for (let i = 0; i <= 15000; i++) {
+    for (let i = 0; i <= 10000; i++) {
         const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
         const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
         
