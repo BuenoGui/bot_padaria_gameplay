@@ -1,54 +1,22 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
-import { get_receitas_raridade_sorteada, sortInt } from "../utils/Formulas.js";
+import { get_receitas_raridade_sorteada, RNG_raridade_receita, sortInt } from "../utils/Formulas.js";
 
 
-export function sortearEstrelas(): number {
-    const resultadoEstrelar = sortInt(0, 100)
-    
-    if (resultadoEstrelar > 98) {
-        return 5
-    } 
-    if (resultadoEstrelar > 90) {
-        return 4
-    } 
-    if (resultadoEstrelar > 70) {
-        return 3
-    } 
-    if (resultadoEstrelar > 40) {
-        return 2
-    }
-    return 1
+export async function sortear_id_massa_preparo(player: Player) {
 
-}
+    const raridade_sorteada = RNG_raridade_receita(player.level)
+    const lista_receitas_sorteadas = await get_receitas_raridade_sorteada(player, raridade_sorteada)
 
-export async function sortear_massa_preparo() {
-
-    const rng = sortInt(0, 100);
-
-    let raridade_sorteada: string = ""
-
-    if (rng < 40) { 
-        raridade_sorteada = "Comum" 
-    } else if (rng < 70) { 
-        raridade_sorteada = "Incomum"
-    } else if(rng < 90 ) { 
-        raridade_sorteada = "Raro"
-    } else {
-        raridade_sorteada = "Épico"
+    if(!lista_receitas_sorteadas || lista_receitas_sorteadas.length === 0) {
+        console.log(player.id_player, "Infelizmente, por sua falta de Experiencia você errou a mão em uma massa: ", raridade_sorteada)
+        return
     }
 
-    const receitas_raridade_sorteada = await get_receitas_raridade_sorteada(raridade_sorteada)
+    const index = sortInt(0, lista_receitas_sorteadas.length - 1)
 
-    if (receitas_raridade_sorteada.length === 0) {
-        throw new Error ("A lista de receitas vazias paizão")
-    } 
+    return lista_receitas_sorteadas[index].id_receita
 
-    const index_sorteado = sortInt(0, receitas_raridade_sorteada.length - 1)
-    const receita_escolhida = receitas_raridade_sorteada[index_sorteado]
-    const id_receita_escolhida = receita_escolhida?.id_receita
- 
-    return id_receita_escolhida!
 
 }
 

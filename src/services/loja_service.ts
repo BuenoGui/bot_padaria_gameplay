@@ -4,7 +4,11 @@ import {
     set_preco_vitrine, set_preco_geladeira, get_gas_maximo, 
     set_preco_gas_total, get_nivel_vitrine, get_nivel_forno, 
     set_preco_forno, get_gas_atual, get_nivel_gas,
-    get_nivel_geladeira, get_nivel_rolo, set_preco_rolo
+    get_nivel_geladeira, get_nivel_rolo, set_preco_rolo,
+    set_preco_receita, get_receitas_compradas,
+    atualizar_dinheiro_upgrade,
+    adicionar_receita_player,
+    get_receita_bloqueada_id
     } 
     from "../utils/Formulas.js";
 
@@ -13,12 +17,17 @@ export async function comprar_gas(player: Player) {
     const gas_atual = await get_gas_atual(player)
     const nivel_gas = await get_nivel_gas(player)
     const gas_max = get_gas_maximo(nivel_gas)
+    const preco_upgrade = 30
+
+    if(player.dinheiro < preco_upgrade) {
+        return console.log(player.id_player, "Sem dinheiro para comprar gás")
+    }
 
     if (gas_atual === gas_max) {
         return console.log ([player.id_player], "seu gás está cheio")
     }
    
-    let gas_novo_player = gas_atual + 10;
+    const gas_novo_player = gas_atual + 10;
 
     if(gas_novo_player < gas_max) {
         await pool.query(
@@ -42,6 +51,8 @@ export async function comprar_gas(player: Player) {
         )
     }
 
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
+
     return console.log(player.id_player, "+10 de gás na sua padaria")
 }
 
@@ -50,7 +61,7 @@ export async function melhorar_gas(player: Player) {
     const nivel_gas = await get_nivel_gas(player)
     const gas_max = get_gas_maximo(nivel_gas)
 
-    let preco_upgrade = set_preco_gas_total(gas_max)
+    const preco_upgrade = set_preco_gas_total(gas_max)
 
     // Checa dinheiro
     if (player.dinheiro < preco_upgrade) {
@@ -74,17 +85,7 @@ export async function melhorar_gas(player: Player) {
         [player.id_player]
     )
     // Diminui dinheiro
-    await pool.query(
-        `UPDATE players
-        SET dinheiro = 
-        dinheiro - $1
-        WHERE id_player
-        = $2`,
-        [
-        preco_upgrade,
-        player.id_player
-        ]
-    )
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
     
     return console.log(player.id_player, "Parabens por comprar + 10 de gás total")
 }
@@ -92,7 +93,7 @@ export async function melhorar_gas(player: Player) {
 export async function melhorar_geladeira(player:Player) {
 
     const nivel_geladeira = await get_nivel_geladeira(player)
-    let preco_upgrade = set_preco_geladeira(nivel_geladeira)
+    const preco_upgrade = set_preco_geladeira(nivel_geladeira)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log(player.id_player, "Player sem dinheiro pro Upgrade da geladeira")
@@ -109,17 +110,7 @@ export async function melhorar_geladeira(player:Player) {
     )
 
     // Diminui dinheiro
-    await pool.query(
-        `UPDATE players
-        SET dinheiro = 
-        dinheiro - $1
-        WHERE id_player
-        = $2`,
-        [
-        preco_upgrade,
-        player.id_player
-        ]
-    )
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
 
     return (player.id_player ,"Você acaba de comprar +5 espaços pra sua geladeira!")
 
@@ -128,7 +119,7 @@ export async function melhorar_geladeira(player:Player) {
 export async function melhorar_vitrine(player:Player) {
 
     const nivel_vitrine = await get_nivel_vitrine(player)
-    let preco_upgrade = set_preco_vitrine(nivel_vitrine)
+    const preco_upgrade = set_preco_vitrine(nivel_vitrine)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log("Player sem dinheiro pro Upgrade da vitrine")
@@ -145,25 +136,15 @@ export async function melhorar_vitrine(player:Player) {
     )
 
     // Diminui dinheiro
-    await pool.query(
-        `UPDATE players
-        SET dinheiro = 
-        dinheiro - $1
-        WHERE id_player
-        = $2`,
-        [
-        preco_upgrade,
-        player.id_player
-        ]
-    )
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
 
     return (player.id_player ,"Você acaba de comprar +2 espaços pra sua vitrine!")
 
 }
 
 export async function melhorar_rolo(player:Player) {
-        const nivel_rolo = await get_nivel_rolo(player)
-    let preco_upgrade = set_preco_rolo(nivel_rolo)
+    const nivel_rolo = await get_nivel_rolo(player)
+    const preco_upgrade = set_preco_rolo(nivel_rolo)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log(player.id_player, "Player sem dinheiro pro Upgrade do rolo")
@@ -180,24 +161,14 @@ export async function melhorar_rolo(player:Player) {
     )
 
     // Diminui dinheiro
-    await pool.query(
-        `UPDATE players
-        SET dinheiro = 
-        dinheiro - $1
-        WHERE id_player
-        = $2`,
-        [
-        preco_upgrade,
-        player.id_player
-        ]
-    )
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
 
     return (player.id_player ,"Você acaba de comprar +1 rolo para massas!!")
 }
 
 export async function melhorar_forno(player:Player) {
     const nivel_forno = await get_nivel_forno(player)
-    let preco_upgrade = set_preco_forno(nivel_forno)
+    const preco_upgrade = set_preco_forno(nivel_forno)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log("Player sem dinheiro pro Upgrade do forno")
@@ -214,17 +185,23 @@ export async function melhorar_forno(player:Player) {
     )
 
     // Diminui dinheiro
-    await pool.query(
-        `UPDATE players
-        SET dinheiro = 
-        dinheiro - $1
-        WHERE id_player
-        = $2`,
-        [
-        preco_upgrade,
-        player.id_player
-        ]
-    )
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
 
     return (player.id_player ,"Você acaba de comprar +1 espaços para seu Forno!!!")
+}
+
+export async function desbloquear_receita(player: Player) {
+
+    const preco_upgrade = set_preco_receita(await get_receitas_compradas(player))
+
+    if(player.dinheiro < preco_upgrade) {
+        console.log (player.id_player, "Sem dinheiro para comprar novas receitas!")
+        return
+    }
+
+    const id_receita_comprada = Number(await get_receita_bloqueada_id(player))
+    await adicionar_receita_player(player, id_receita_comprada)
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
+
+    
 }

@@ -4,7 +4,7 @@ import { cozinhar } from "../services/cozinhar_service.js";
 import { preparar_massa } from "../services/preparar_massa.js";
 import { sortearPlayer} from "../services/sorteio_service.js";
 import { vender } from "../services/vender_service.js";
-import { sortInt } from "../utils/Formulas.js";
+import { get_receitas_padrao, sortInt } from "../utils/Formulas.js";
 import { comprar_gas, melhorar_gas,
         melhorar_geladeira, melhorar_vitrine, 
         melhorar_forno, melhorar_rolo
@@ -18,7 +18,8 @@ const tabelas_sql = [
     "src/database/sql/criar_vitrines.sql",
     "src/database/sql/criar_raridades.sql",
     "src/database/sql/criar_receitas.sql",
-    "src/database/sql/criar_upgrades.sql"
+    "src/database/sql/criar_upgrades.sql",
+    "src/database/sql/criar_receitas_player.sql"
 ]
 const seed_sql = "src/database/sql/seed.sql";
 
@@ -74,6 +75,29 @@ async function init() {
     console.log("padarias criadas")
     // 
 
+    // CRIAR RECEITAS_PLAYERS
+
+    async function criar_receita_player() {
+        const  todos_jogadores_sql = await pool.query("SELECT id_player FROM players");
+        for (const jogador of todos_jogadores_sql.rows) {
+
+            const receitas_padrao = await get_receitas_padrao()
+
+            for(const receita of receitas_padrao) {
+                await pool.query(`
+                INSERT INTO receitas_player (id_receita, id_player, raridade)
+                VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`,
+                [receita.id_receita, jogador.id_player, receita.raridade]);
+            }
+
+        }
+    }
+    await criar_receita_player()
+    console.log("Receitas padrões adicionadas!")
+    // 
+
+
+
     // CRIAR UPGRADES
     async function criar_upgrades() {
         const  todos_jogadores_sql = await pool.query("SELECT id_player FROM players");
@@ -87,7 +111,7 @@ async function init() {
     await criar_upgrades();
     console.log("uprades definidos")
 
-    for (let i = 0; i <= 10000; i++) {
+    for (let i = 0; i <= 1000; i++) {
         const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
         const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
         

@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS geladeiras;
 DROP TABLE IF EXISTS upgrades;
 
 DROP TABLE IF EXISTS padarias;
+DROP TABLE IF EXISTS receitas_player;
 DROP TABLE IF EXISTS receitas;
 DROP TABLE IF EXISTS raridades;
 

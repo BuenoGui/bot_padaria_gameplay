@@ -1,18 +1,19 @@
-import { sortearEstrelas, sortear_massa_prato } from "./sorteio_service.js"
+import { sortear_massa_prato } from "./sorteio_service.js"
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
-import { get_capacidade_vitrine, get_dados_upgrade,
+import { get_capacidade_vitrine,
         get_pratos_vitrine_atual, get_gas_atual, 
         get_gas_receita, get_nivel_vitrine, 
         get_raridade_receita,
         get_xp_raridade,
         set_xp_cozinhar,
-        atualizar_xp
+        atualizar_xp,
+        get_nivel_forno,
+        RNG_estrelas
         } from "../utils/Formulas.js";
 
 export async function cozinhar(player: Player) {
-    const dados_upgrade = await get_dados_upgrade(player)
-    const nivel_forno = dados_upgrade.nivel_forno;
+    const nivel_forno = await get_nivel_forno(player)
 
     for(let index = 0; index < nivel_forno; index++) {
         
@@ -25,7 +26,7 @@ export async function cozinhar(player: Player) {
         const id_receita_sorteada = massa_sorteada.id_receita
 
 
-        const estrela_sorteada = sortearEstrelas();
+        const estrela_sorteada = RNG_estrelas(player.level);
         const data_criada = new Date();
 
         const id_receita_massa_sorteada = massa_sorteada.id_receita

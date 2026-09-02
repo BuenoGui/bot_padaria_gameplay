@@ -7,6 +7,52 @@ export function sortInt (min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+// SORT RNG receita
+export function RNG_raridade_receita (level_player: number) {
+    
+    const rng = sortInt(level_player, 100)
+
+    let raridade_sorteada: string = ""
+
+    if (rng < 40) { 
+        raridade_sorteada = "Comum"        //40%
+    } else if (rng < 70) { 
+        raridade_sorteada = "Incomum"      //30%
+    } else if (rng < 85) { 
+        raridade_sorteada = "Raro"         //15%
+    } else if (rng < 93) { 
+        raridade_sorteada = "Épico"        //8%
+    } else if (rng < 97) { 
+        raridade_sorteada = "Lendário"     //4%
+    } else if (rng < 99) { 
+        raridade_sorteada = "Lenda"        //2%
+    } else {
+        raridade_sorteada = "Mysthico"     //1%
+    }
+
+    return raridade_sorteada
+
+}
+
+export function RNG_estrelas(level_player:number) {
+    const resultadoEstrelar = sortInt(level_player, 100)
+     
+    if (resultadoEstrelar > 98) {
+        return 5
+    } 
+    if (resultadoEstrelar > 90) {
+        return 4
+    } 
+    if (resultadoEstrelar > 70) {
+        return 3
+    } 
+    if (resultadoEstrelar > 40) {
+        return 2
+    }
+    return 1
+}
+
+
 // DADOS
 export function get_gas_maximo(nivel_gas: number) {
     return 100 + (nivel_gas * 10)
@@ -23,6 +69,7 @@ export function get_capacidade_vitrine (nivel_vitrine: number) {
 export function get_capacidade_forno (nivel_forno: number) {
     return nivel_forno + 1
 }
+
 
 
 
@@ -227,13 +274,16 @@ export async function get_gas_receita(id_receita: number) {
     return gas_necessario
 }
 
-export async function get_receitas_raridade_sorteada(raridade_nome: string) {
+export async function get_receitas_raridade_sorteada(player: Player, raridade_nome: string) {
     const lista_receitas_raridade_sorteada_sql = await pool.query(`
         SELECT * 
-        FROM receitas
-        WHERE raridade
-        = $1`,
-        [raridade_nome]
+        FROM receitas_player
+        WHERE id_player
+        = $1
+        AND
+        raridade
+        = $2`,
+        [player.id_player, raridade_nome]
         )
 
     const lista_receitas_raridade_sorteada = lista_receitas_raridade_sorteada_sql.rows
@@ -262,6 +312,58 @@ export async function get_quantidade_geladeira_atual(player:Player) {
     
 }
 
+export async function get_receita_bloqueada_id(player: Player) {
+    
+    const id_receita_bloqueada_obj = await pool.query(`
+        SELECT receitas.id_receita
+        FROM receitas 
+        LEFT JOIN receitas_player 
+            ON receitas_player.id_receita = receitas.id_receita
+           AND receitas_player.id_player = $1
+        WHERE receitas.receita_bloqueada = TRUE
+          AND receitas_player.id_receita IS NULL
+        ORDER BY RANDOM()
+        LIMIT 1`,
+        [player.id_player]
+    )
+
+    const id_receita_bloqueada = id_receita_bloqueada_obj.rows[0]
+    return console.log(id_receita_bloqueada)
+
+}
+
+export async function get_receitas_padrao() {
+    
+    const receitas_padrao_obj = await pool.query(`
+        SELECT *  
+        FROM receitas
+        WHERE receita_bloqueada
+        = FALSE`,
+    )
+
+    const total = receitas_padrao_obj.rows
+
+    return total
+
+}
+
+export async function get_receitas_compradas(player: Player) {
+    
+    const receitas_compradas_obj = await pool.query(`
+        SELECT receitas_compradas  
+        FROM players
+        WHERE id_player
+        = $1`,
+        [player.id_player]
+    )
+
+    const  { receitas_compradas }  = receitas_compradas_obj.rows[0]
+
+    return receitas_compradas
+
+}
+
+
 export async function construir_player(id_player: number) {
     const dados_player_sql = await pool.query(`
         SELECT * 
@@ -287,6 +389,62 @@ export async function construir_player(id_player: number) {
 }
 
 
+export async function atualizar_dinheiro_upgrade(player: Player, preco_upgrade: number) {
+
+    const dinheiro_atual_obj = await pool.query(
+        `UPDATE players
+        SET dinheiro
+        = dinheiro - $1
+        WHERE id_player
+        = $2
+        RETURNING dinheiro`,
+        [preco_upgrade, player.id_player]
+    )
+
+    const { dinheiro } = dinheiro_atual_obj.rows[0]
+
+
+    return console.log(player.id_player,"Seu dinheiro atual:", dinheiro)
+
+}
+
+
+
+
+
+
+
+
+
+export async function adicionar_receita_player(player: Player, id_receita: number) {
+    // atualiza player receitas_compradas
+    await pool.query(`
+        UPDATE players
+        SET receitas_compradas
+        = receitas_compradas + 1
+        WHERE id_player
+        = $1`,
+        [player.id_player])
+    
+    const linha_nova = await pool.query(`
+        INSERT INTO receitas_player 
+        (id_player, id_receita)
+        VALUES ($1, $2)
+        RETURNING id_receitas_player`,
+        [player.id_player, id_receita]
+        )
+
+    const id_linha = linha_nova
+    
+    console.log(id_linha)
+    console.log(player.id_player)
+
+    return 
+}
+
+
+
+
 
 
 // PREÇOS
@@ -309,6 +467,10 @@ export function set_preco_rolo(nivel_rolo: number) {
 
 export function set_preco_forno(nivel_forno: number) {
     return (nivel_forno * 20) + ((nivel_forno*35) * ((nivel_forno*4)**2))
+}
+
+export function set_preco_receita(receitas_compradas: number) {
+    return ((receitas_compradas * 5)**2 + 540)
 }
 
 
