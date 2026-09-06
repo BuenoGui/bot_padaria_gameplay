@@ -9,7 +9,8 @@ import { get_capacidade_vitrine,
         set_xp_cozinhar,
         atualizar_xp,
         get_nivel_forno,
-        RNG_estrelas
+        RNG_estrelas,
+        get_vezes_sovada
         } from "../utils/Formulas.js";
 
 export async function cozinhar(player: Player) {
@@ -19,14 +20,20 @@ export async function cozinhar(player: Player) {
         
         const massa_sorteada = await sortear_massa_prato(player)
         if (!massa_sorteada) {
-            return console.log(player.id_player, "Sem massas na geladeira")
+            continue
         }
 
         const id_massa_sorteada = massa_sorteada.id_geladeira
         const id_receita_sorteada = massa_sorteada.id_receita
 
 
-        const estrela_sorteada = RNG_estrelas(player.level);
+        let estrela_sorteada = RNG_estrelas(player.level);
+        const vezes_sovada = await get_vezes_sovada(id_massa_sorteada)
+
+        if(estrela_sorteada === 1 && vezes_sovada === 5) {
+            estrela_sorteada ++
+        }
+
         const data_criada = new Date();
 
         const id_receita_massa_sorteada = massa_sorteada.id_receita
@@ -41,14 +48,14 @@ export async function cozinhar(player: Player) {
         const xp_recebido = set_xp_cozinhar(xp_raridade)
         
         if (espacos_vitrine_atual >= capacidade_vitrine) {
-            return console.log(player.id_player,"Sua vitrine está cheia!")
+            console.log(player.id_player,"Sua vitrine está cheia!")
+            break 
         }
-
-    
         
         const gas_atual = await get_gas_atual(player)
         if (gas_atual < gas_receita_sorteada) {
-            return console.log(player.id_player, "Sem gás para a receita")
+            console.log(player.id_player, "Sem gás para a receita")
+            break
         } 
         await pool.query(
             `UPDATE padarias
@@ -60,9 +67,8 @@ export async function cozinhar(player: Player) {
             player.id_player]
         );
         
-
         // CRIA PRATO
-        const id_prato_vitrine = await pool.query(
+        const id_prato_vitrine_obj = await pool.query(
             `INSERT INTO vitrines 
             (id_player, id_receita,
             estrelas, hora_criada)
@@ -73,6 +79,9 @@ export async function cozinhar(player: Player) {
             estrela_sorteada,
             data_criada]
             )
+
+        const id_prato_vitrine = id_prato_vitrine_obj.rows[0]
+        const id_vitrine = id_prato_vitrine.id_vitrine
         // APAGA MASSA DA GELADEIRA
         await pool.query(
             `DELETE FROM 
@@ -81,7 +90,10 @@ export async function cozinhar(player: Player) {
             [id_massa_sorteada]
         )
 
-        console.log(id_prato_vitrine.rows)
+        console.log(player.nickname, "Você cozinhou o prato número:", id_vitrine)
+        console.log("Você recebeu:", xp_recebido, "XP")
+        console.log("Ao preparar um prato" , receita_raridade, "de:", estrela_sorteada ,"estrelas")
+
         atualizar_xp(player, xp_recebido)
         
     }

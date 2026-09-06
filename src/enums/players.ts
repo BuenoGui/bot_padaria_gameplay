@@ -1,0 +1,33 @@
+export const PLAYERS_TESTE = {
+  '11912345678': 'JOSEFINA',
+  '11911111111': 'Carlos eduardo',
+  '11922222222': 'Pedro pastel',
+  '11933333333': '11933333333',
+  '11944444444': 'pedro021478532',
+  '11955555555': 'Joana a mãe',
+  '11966666666': 'eu comi um inglês',
+  '11977777777': 'na@#$%!)(&)',
+  '11988888888': 'vou comer biscoito',
+  '19999999999': '19999999999 nove',
+  '19000000000': 'quase binario',
+  '19111111112': 'preciso',
+  '19111111113': 'de',
+  '19111111114': 'novos',
+  '19111111115': 'players',
+  '19111111116': 'para',
+  '19111111117': 'a',
+  '19111111118': 'base de ',
+  '19111111119': 'testes',
+  '19111111110': 'IRA!!!!!!!!!!!!!!',
+  '19111111122': '19111111110',
+  '19111111133': '19111111113',
+  '19111102582': 'batatinha quan',
+  '19111174892': 'nasce, espalha ',
+  '19112163112': 'pelo chão',
+  '19119856412': 'menininha quando',
+  '20027868725': 'macacos me ',
+  '21657886132': 'joao e o pe de'
+} as const;
+
+
+export type tell_player = keyof typeof PLAYERS_TESTE;

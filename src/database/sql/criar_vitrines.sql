@@ -5,5 +5,5 @@ create TABLE vitrines (
     estrelas SMALLINT NOT NULL,
     hora_criada TIMESTAMP NOT NULL,
 
-    FOREIGN KEY (id_player) REFERENCES players(id_player)
+    FOREIGN KEY (id_player) REFERENCES players(id_player) ON DELETE CASCADE
 )

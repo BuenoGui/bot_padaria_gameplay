@@ -276,13 +276,12 @@ export async function get_gas_receita(id_receita: number) {
 
 export async function get_receitas_raridade_sorteada(player: Player, raridade_nome: string) {
     const lista_receitas_raridade_sorteada_sql = await pool.query(`
-        SELECT * 
+        SELECT receitas.*
         FROM receitas_player
-        WHERE id_player
-        = $1
-        AND
-        raridade
-        = $2`,
+        JOIN receitas
+            ON receitas.id_receita = receitas_player.id_receita
+        WHERE receitas_player.id_player = $1
+        AND receitas.raridade = $2;`,
         [player.id_player, raridade_nome]
         )
 
@@ -292,6 +291,22 @@ export async function get_receitas_raridade_sorteada(player: Player, raridade_no
     return lista_receitas_raridade_sorteada
 
 }
+
+export async function get_vezes_sovada(id_geladeira: number) {
+    const massa_geladeira_obj = await pool.query(`
+        SELECT *
+        FROM geladeiras
+        WHERE id_geladeira = $1`,
+        [id_geladeira]
+        )
+
+    const { vezes_sovado } = massa_geladeira_obj.rows[0]
+
+    return Number(vezes_sovado)
+
+}
+
+
 
 export async function get_quantidade_geladeira_atual(player:Player) {
     

@@ -3,5 +3,7 @@ create TABLE padarias (
     id_player INT NOT NULL,
     gas_atual SMALLINT NOT NULL DEFAULT 100,
 
-    FOREIGN KEY (id_player) REFERENCES players(id_player)
+    FOREIGN KEY (id_player) REFERENCES players(id_player) ON DELETE CASCADE,
+
+    UNIQUE(id_player)
 )

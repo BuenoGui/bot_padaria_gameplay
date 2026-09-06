@@ -1,3 +1,4 @@
 node_modules
 .env
 src/services/tests/*
+src/database/tests/*

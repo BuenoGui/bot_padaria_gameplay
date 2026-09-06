@@ -7,5 +7,7 @@ create TABLE upgrades (
     nivel_rolo INT NOT NULL DEFAULT 0,                                       
     nivel_forno INT NOT NULL DEFAULT 0, 
 
-    FOREIGN KEY (id_player) REFERENCES players(id_player)
+    FOREIGN KEY (id_player) REFERENCES players(id_player) ON DELETE CASCADE,
+
+    UNIQUE(id_player)
 )

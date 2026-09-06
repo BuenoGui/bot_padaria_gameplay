@@ -2,26 +2,16 @@ import pool from "./connection.js"
 import { readFile } from "fs/promises";
 import { cozinhar } from "../services/cozinhar_service.js";
 import { preparar_massa } from "../services/preparar_massa.js";
-import { sortearPlayer} from "../services/sorteio_service.js";
+import { sortear_id_geladeira_player, sortearPlayer} from "../services/sorteio_service.js";
 import { vender } from "../services/vender_service.js";
 import { get_receitas_padrao, sortInt } from "../utils/Formulas.js";
 import { comprar_gas, melhorar_gas,
         melhorar_geladeira, melhorar_vitrine, 
         melhorar_forno, melhorar_rolo
         } from "../services/loja_service.js";
+import { PLAYERS_TESTE } from "../enums/players.js";
+import { sovar_massa } from "../services/sovar_service.js";
 
-
-const tabelas_sql = [
-    "src/database/sql/criar_jogadores.sql",
-    "src/database/sql/criar_padarias.sql",
-    "src/database/sql/criar_geladeiras.sql",
-    "src/database/sql/criar_vitrines.sql",
-    "src/database/sql/criar_raridades.sql",
-    "src/database/sql/criar_receitas.sql",
-    "src/database/sql/criar_upgrades.sql",
-    "src/database/sql/criar_receitas_player.sql"
-]
-const seed_sql = "src/database/sql/seed.sql";
 
 const conjunto_acoes = [
     async () => await vender(),
@@ -34,91 +24,151 @@ const conjunto_acoes = [
     async () => await melhorar_forno(await sortearPlayer()),
     async () => await preparar_massa(await sortearPlayer()),
     async () => await preparar_massa(await sortearPlayer()),
+    async () => await sovar_massa(await sortear_id_geladeira_player(await sortearPlayer())),
     async () => await cozinhar(await sortearPlayer()),
     async () => await cozinhar(await sortearPlayer())
 ]
 
-async function init() {
+const tabelas_sql = [
+    "raridades", "receitas", "players", "padarias", "vitrines", "geladeiras", "receitas_player", "upgrades"
+]
 
-    // RESET SQL
-    await pool.query(await readFile(
-        "src/database/sql/reset.sql",
-        "utf-8"
-    ))
-    console.log("reset feito")
-    // 
+const tabelas_seed = [
+    "raridades", "receitas", "players"
+]
 
-    // CRIAR TABELAS
-    for(const arquivo of tabelas_sql) {
-        const sql = await readFile(arquivo, "utf-8");
-        await pool.query(sql);
-    }
-    console.log("tabelas criadas")
-    // 
+const tabelas_necessarias_player = [
+    "padarias", "receitas_player", "upgrades"
+]
 
-    // SEED
-    await pool.query(await readFile(seed_sql, "utf-8"));
-    console.log("seed_players plantada")
-    // 
+const players_teste: Array<String> = [
+    ('11912345678'),('11911111111'),
+    ('11922222222'),('11933333333'),
+    ('11944444444'),('11955555555'),
+    ('11966666666'),('11977777777'),
+    ('11988888888'),('19999999999'),
+    ('19000000000'),('19111111112'),
+    ('19111111113'),('19111111114'),
+    ('19111111115'),('19111111116'),
+    ('19111111117'),('19111111118'),
+    ('19111111119'),('19111111110'),
+    ('19111111122'),('19111111133'),
+    ('19111102582'),('19111174892'),
+    ('19112163112'),('19119856412'),
+    ('20027868725'),('21657886132')
+]
 
-    // CRIAR PADARIAS
-    async function criar_padarias() {
-        const  todos_jogadores_sql = await pool.query("SELECT id_player FROM players");
-        for (const jogador of todos_jogadores_sql.rows) {
-            await pool.query(`
-                INSERT INTO padarias (id_player)
-                VALUES ($1) ON CONFLICT DO NOTHING;`,
-            [jogador.id_player]);
-        }
-    }
-    await criar_padarias();
-    console.log("padarias criadas")
-    // 
+const players_teste_ids: Array<String> = []
+const players_restantes: Array<String> = []
+const tabelas_restantes: Array<String> = []
 
-    // CRIAR RECEITAS_PLAYERS
-
-    async function criar_receita_player() {
-        const  todos_jogadores_sql = await pool.query("SELECT id_player FROM players");
-        for (const jogador of todos_jogadores_sql.rows) {
-
-            const receitas_padrao = await get_receitas_padrao()
-
-            for(const receita of receitas_padrao) {
-                await pool.query(`
-                INSERT INTO receitas_player (id_receita, id_player, raridade)
-                VALUES ($1, $2, $3) ON CONFLICT DO NOTHING;`,
-                [receita.id_receita, jogador.id_player, receita.raridade]);
-            }
-
-        }
-    }
-    await criar_receita_player()
-    console.log("Receitas padrões adicionadas!")
-    // 
-
-
-
-    // CRIAR UPGRADES
-    async function criar_upgrades() {
-        const  todos_jogadores_sql = await pool.query("SELECT id_player FROM players");
-        for (const jogador of todos_jogadores_sql.rows) {
-            await pool.query(`
-                INSERT INTO upgrades (id_player)
-                VALUES ($1) ON CONFLICT DO NOTHING;`,
-            [jogador.id_player]);
-        }
-    }
-    await criar_upgrades();
-    console.log("uprades definidos")
-
-    for (let i = 0; i <= 1000; i++) {
-        const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
-        const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
-        
-        acao_sorteada
+// CRIA AS TABELAS
+for (const tabela of tabelas_sql) {
+    // Vê se as tabelas já existem
+    const info = await pool.query(`
+            SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = $1
+            );`,
+        [tabela]
+    )
+    // Se não existe cria
+    if(info.rows[0].exists === false) {
+            const arquivo = `src/database/sql/criar_${tabela}.sql`
+            const sql = await readFile(arquivo, "utf-8");
+            await pool.query(sql);
     }
 
-    await pool.end()
+    // ADICIONA SEED
+    const linhas_tabela = await pool.query(`
+        SELECT EXISTS (
+        SELECT 1 
+        FROM ${tabela}
+        LIMIT 1
+        );`
+    )
+    if(linhas_tabela.rows[0].exists === false) {
+        if(tabelas_seed.includes(tabela)) {
+            const arquivo_seed = `src/database/sql/seed_${tabela}.sql`
+                const seed_sql = await readFile(arquivo_seed, "utf-8");
+                await pool.query(seed_sql)
+            } 
+        } else if(tabelas_necessarias_player.includes(tabela)) {
+            tabelas_restantes.push(tabela)
+    }
+
 }
 
-init();
+// CHECA QUAIS PLAYERS DE TESTE EXISTEM
+for(const player of players_teste) {
+    const player_tell_obj = await pool.query(`
+        SELECT id_player
+        FROM players
+        WHERE tell = $1
+        `, [player]
+        )
+
+    if(player_tell_obj.rows.length === 0) {
+        players_restantes.push(player)
+    } else {
+        const { id_player } = player_tell_obj.rows[0]
+        players_teste_ids.push(id_player)
+    }
+
+}
+
+// PENDENTE
+// CRIAR PLAYERS RESTANTES
+if (players_restantes.length > 0) {
+    for(const player_restante of players_restantes) {
+
+        const id_player_obj = await pool.query(`
+            INSERT INTO players
+            (tell, nickname)
+            VALUES
+            ($1, $2)
+            RETURNING id_player`,
+            [player_restante, PLAYERS_TESTE[player_restante as keyof typeof PLAYERS_TESTE]])
+
+        const  { id_player } = id_player_obj.rows[0]  
+
+        players_teste_ids.push(id_player)
+    }
+}
+
+for(const id_player of players_teste_ids) {
+    // CRIA A PADARIA
+    await pool.query(`
+                INSERT INTO padarias (id_player)
+                VALUES ($1) ON CONFLICT DO NOTHING;`,
+            [id_player]
+    )
+
+    // CRIA RECEITAS_PLAYER
+    const receitas_padrao = await get_receitas_padrao()
+    for(const receita of receitas_padrao) {
+        await pool.query(`
+            INSERT INTO receitas_player (id_receita, id_player)
+            VALUES ($1, $2) ON CONFLICT DO NOTHING;`,
+            [receita.id_receita, id_player]);
+    }
+
+    // CRIA UPGRADES
+    await pool.query(`
+        INSERT INTO upgrades (id_player)
+        VALUES ($1) ON CONFLICT DO NOTHING;`,
+        [id_player]
+    )
+
+    console.log(id_player , "Criado!")
+}
+
+for (let i = 0; i <= 10000; i++) {
+    const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
+    const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
+        
+    acao_sorteada
+}
+
+await pool.end();

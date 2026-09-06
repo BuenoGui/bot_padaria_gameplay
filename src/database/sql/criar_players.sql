@@ -5,5 +5,7 @@ create TABLE players (
     level INT NOT NULL DEFAULT 0,
     xp INT NOT NULL DEFAULT 0,
     dinheiro NUMERIC(10,2) NOT NULL DEFAULT 0,
-    receitas_compradas INT NOT NULL DEFAULT 0
+    receitas_compradas INT NOT NULL DEFAULT 0,
+
+    UNIQUE(id_player, tell)
 )

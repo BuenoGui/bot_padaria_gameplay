@@ -65,3 +65,20 @@ export async function sortearPlayer() {
     return jogador_sorteado;
     
 }
+
+export async function sortear_id_geladeira_player(player:Player) {
+    const resultado_obj = await pool.query(`
+        SELECT *
+        FROM geladeiras
+        WHERE id_player
+        = $1
+        ORDER BY RANDOM()
+        LIMIT 1 
+        `,
+        [player.id_player]
+    )
+
+    const resultado = resultado_obj.rows[0]
+
+    return Number(resultado.id_geladeira)
+}
