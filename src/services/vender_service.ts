@@ -1,5 +1,7 @@
 import pool from "../database/connection.js";
-import { atualizar_xp, construir_player, dinheiro_venda, get_raridade_receita, get_xp_raridade, set_xp_cozinhar, sortInt } from "../utils/Formulas.js";
+import { atualizar_xp, construir_player } from "../repositories/player_repository.js";
+import { get_raridade_receita, get_xp_raridade } from "../repositories/receita_repository.js";
+import { dinheiro_venda, xp_cozinhar, sortInt } from "../utils/Formulas.js";
 
 export async function vender() {
     const vitrine = await pool.query(
@@ -40,7 +42,7 @@ export async function vender() {
 
         const receita_raridade = await get_raridade_receita(id_receita)
         const xp_raridade = await get_xp_raridade(receita_raridade)
-        const xp_recebido = set_xp_cozinhar(xp_raridade)
+        const xp_recebido = xp_cozinhar(xp_raridade)
 
 
         // dados SQL

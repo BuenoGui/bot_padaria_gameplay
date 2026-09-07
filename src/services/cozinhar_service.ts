@@ -1,17 +1,13 @@
 import { sortear_massa_prato } from "./sorteio_service.js"
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
-import { get_capacidade_vitrine,
-        get_pratos_vitrine_atual, get_gas_atual, 
-        get_gas_receita, get_nivel_vitrine, 
-        get_raridade_receita,
-        get_xp_raridade,
-        set_xp_cozinhar,
-        atualizar_xp,
-        get_nivel_forno,
-        RNG_estrelas,
-        get_vezes_sovada
-        } from "../utils/Formulas.js";
+import { get_capacidade_vitrine, xp_cozinhar, RNG_estrelas } from "../utils/Formulas.js";
+import { get_nivel_forno, get_nivel_vitrine } from "../repositories/upgrade_repository.js";
+import { get_vezes_sovada } from "../repositories/geladeira_repository.js";
+import { get_gas_receita, get_raridade_receita, get_xp_raridade } from "../repositories/receita_repository.js";
+import { get_pratos_vitrine_atual } from "../repositories/vitrine_repositoory.js";
+import { get_gas_atual } from "../repositories/padaria_repository.js";
+import { atualizar_xp } from "../repositories/player_repository.js";
 
 export async function cozinhar(player: Player) {
     const nivel_forno = await get_nivel_forno(player)
@@ -45,7 +41,7 @@ export async function cozinhar(player: Player) {
 
         const receita_raridade = await get_raridade_receita(id_receita_sorteada)
         const xp_raridade = await get_xp_raridade(receita_raridade)
-        const xp_recebido = set_xp_cozinhar(xp_raridade)
+        const xp_recebido = xp_cozinhar(xp_raridade)
         
         if (espacos_vitrine_atual >= capacidade_vitrine) {
             console.log(player.id_player,"Sua vitrine está cheia!")

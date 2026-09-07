@@ -4,16 +4,19 @@ import { cozinhar } from "../services/cozinhar_service.js";
 import { preparar_massa } from "../services/preparar_massa.js";
 import { sortear_id_geladeira_player, sortearPlayer} from "../services/sorteio_service.js";
 import { vender } from "../services/vender_service.js";
-import { get_receitas_padrao, sortInt } from "../utils/Formulas.js";
+import { sortInt } from "../utils/Formulas.js";
 import { comprar_gas, melhorar_gas,
         melhorar_geladeira, melhorar_vitrine, 
-        melhorar_forno, melhorar_rolo
+        melhorar_forno, melhorar_rolo,
+        desbloquear_receita
         } from "../services/loja_service.js";
 import { PLAYERS_TESTE } from "../enums/players.js";
 import { sovar_massa } from "../services/sovar_service.js";
+import { get_receitas_padrao } from "../repositories/receita_repository.js";
 
 
 const conjunto_acoes = [
+    async () => await vender(),
     async () => await vender(),
     async () => await comprar_gas(await sortearPlayer()),
     async () => await comprar_gas(await sortearPlayer()),
@@ -22,10 +25,9 @@ const conjunto_acoes = [
     async () => await melhorar_vitrine(await sortearPlayer()),
     async () => await melhorar_rolo(await sortearPlayer()),
     async () => await melhorar_forno(await sortearPlayer()),
+    async () => await desbloquear_receita(await sortearPlayer()),
     async () => await preparar_massa(await sortearPlayer()),
-    async () => await preparar_massa(await sortearPlayer()),
-    async () => await sovar_massa(await sortear_id_geladeira_player(await sortearPlayer())),
-    async () => await cozinhar(await sortearPlayer()),
+    async () => await sovar_massa(Number(await sortear_id_geladeira_player(await sortearPlayer()))),
     async () => await cozinhar(await sortearPlayer())
 ]
 
@@ -35,10 +37,6 @@ const tabelas_sql = [
 
 const tabelas_seed = [
     "raridades", "receitas", "players"
-]
-
-const tabelas_necessarias_player = [
-    "padarias", "receitas_player", "upgrades"
 ]
 
 const players_teste: Array<String> = [
@@ -60,7 +58,6 @@ const players_teste: Array<String> = [
 
 const players_teste_ids: Array<String> = []
 const players_restantes: Array<String> = []
-const tabelas_restantes: Array<String> = []
 
 // CRIA AS TABELAS
 for (const tabela of tabelas_sql) {
@@ -94,11 +91,10 @@ for (const tabela of tabelas_sql) {
                 const seed_sql = await readFile(arquivo_seed, "utf-8");
                 await pool.query(seed_sql)
             } 
-        } else if(tabelas_necessarias_player.includes(tabela)) {
-            tabelas_restantes.push(tabela)
-    }
-
+        } 
 }
+
+const receitas_padrao = await get_receitas_padrao()
 
 // CHECA QUAIS PLAYERS DE TESTE EXISTEM
 for(const player of players_teste) {
@@ -146,7 +142,6 @@ for(const id_player of players_teste_ids) {
     )
 
     // CRIA RECEITAS_PLAYER
-    const receitas_padrao = await get_receitas_padrao()
     for(const receita of receitas_padrao) {
         await pool.query(`
             INSERT INTO receitas_player (id_receita, id_player)
@@ -164,7 +159,7 @@ for(const id_player of players_teste_ids) {
     console.log(id_player , "Criado!")
 }
 
-for (let i = 0; i <= 10000; i++) {
+for (let i = 0; i <= 40000; i++) {
     const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
     const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
         

@@ -1,16 +1,12 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
-import { 
-    set_preco_vitrine, set_preco_geladeira, get_gas_maximo, 
-    set_preco_gas_total, get_nivel_vitrine, get_nivel_forno, 
-    set_preco_forno, get_gas_atual, get_nivel_gas,
-    get_nivel_geladeira, get_nivel_rolo, set_preco_rolo,
-    set_preco_receita, get_receitas_compradas,
-    atualizar_dinheiro_upgrade,
-    adicionar_receita_player,
-    get_receita_bloqueada_id
-    } 
-    from "../utils/Formulas.js";
+import { get_gas_atual } from "../repositories/padaria_repository.js";
+import { atualizar_dinheiro_upgrade, get_receitas_compradas } from "../repositories/player_repository.js";
+import { adicionar_receita_player, get_receita_bloqueada_id } from "../repositories/receita_repository.js";
+import { get_nivel_forno, get_nivel_gas, get_nivel_geladeira, get_nivel_rolo, get_nivel_vitrine } from "../repositories/upgrade_repository.js";
+import { preco_vitrine, preco_geladeira, get_gas_maximo, 
+        preco_gas_total, preco_forno, preco_rolo,
+        preco_receita } from "../utils/Formulas.js";
 
 export async function comprar_gas(player: Player) {
 
@@ -61,7 +57,7 @@ export async function melhorar_gas(player: Player) {
     const nivel_gas = await get_nivel_gas(player)
     const gas_max = get_gas_maximo(nivel_gas)
 
-    const preco_upgrade = set_preco_gas_total(gas_max)
+    const preco_upgrade = preco_gas_total(gas_max)
 
     // Checa dinheiro
     if (player.dinheiro < preco_upgrade) {
@@ -93,7 +89,7 @@ export async function melhorar_gas(player: Player) {
 export async function melhorar_geladeira(player:Player) {
 
     const nivel_geladeira = await get_nivel_geladeira(player)
-    const preco_upgrade = set_preco_geladeira(nivel_geladeira)
+    const preco_upgrade = preco_geladeira(nivel_geladeira)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log(player.id_player, "Player sem dinheiro pro Upgrade da geladeira")
@@ -119,7 +115,7 @@ export async function melhorar_geladeira(player:Player) {
 export async function melhorar_vitrine(player:Player) {
 
     const nivel_vitrine = await get_nivel_vitrine(player)
-    const preco_upgrade = set_preco_vitrine(nivel_vitrine)
+    const preco_upgrade = preco_vitrine(nivel_vitrine)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log("Player sem dinheiro pro Upgrade da vitrine")
@@ -144,7 +140,7 @@ export async function melhorar_vitrine(player:Player) {
 
 export async function melhorar_rolo(player:Player) {
     const nivel_rolo = await get_nivel_rolo(player)
-    const preco_upgrade = set_preco_rolo(nivel_rolo)
+    const preco_upgrade = preco_rolo(nivel_rolo)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log(player.id_player, "Player sem dinheiro pro Upgrade do rolo")
@@ -168,7 +164,7 @@ export async function melhorar_rolo(player:Player) {
 
 export async function melhorar_forno(player:Player) {
     const nivel_forno = await get_nivel_forno(player)
-    const preco_upgrade = set_preco_forno(nivel_forno)
+    const preco_upgrade = preco_forno(nivel_forno)
 
     if (player.dinheiro < preco_upgrade) {
         return console.log("Player sem dinheiro pro Upgrade do forno")
@@ -192,7 +188,7 @@ export async function melhorar_forno(player:Player) {
 
 export async function desbloquear_receita(player: Player) {
 
-    const preco_upgrade = set_preco_receita(await get_receitas_compradas(player))
+    const preco_upgrade = preco_receita(await get_receitas_compradas(player))
 
     if(player.dinheiro < preco_upgrade) {
         console.log (player.id_player, "Sem dinheiro para comprar novas receitas!")

@@ -1,6 +1,7 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
-import { get_receitas_raridade_sorteada, RNG_raridade_receita, sortInt } from "../utils/Formulas.js";
+import { get_receitas_raridade_sorteada } from "../repositories/receita_repository.js";
+import { RNG_raridade_receita, sortInt } from "../utils/Formulas.js";
 
 
 export async function sortear_id_massa_preparo(player: Player) {
@@ -78,7 +79,12 @@ export async function sortear_id_geladeira_player(player:Player) {
         [player.id_player]
     )
 
+    
     const resultado = resultado_obj.rows[0]
-
+    
+    if(!resultado) {
+        return console.log("Player sorteado sem massas na geladeira")
+    }
+    
     return Number(resultado.id_geladeira)
 }
