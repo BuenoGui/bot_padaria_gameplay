@@ -114,7 +114,6 @@ for(const player of players_teste) {
 
 }
 
-// PENDENTE
 // CRIAR PLAYERS RESTANTES
 if (players_restantes.length > 0) {
     for(const player_restante of players_restantes) {

@@ -1,5 +1,9 @@
 import pool from "../database/connection.js"
 import Player from "../entities/Player.js"
+import { get_capacidade_geladeira, get_capacidade_vitrine, get_gas_maximo } from "../utils/Formulas.js"
+import { get_massas_geladeira_atual } from "./geladeira_repository.js"
+import { get_nivel_forno, get_nivel_gas, get_nivel_geladeira, get_nivel_rolo, get_nivel_vitrine } from "./upgrade_repository.js"
+import { get_pratos_vitrine_atual } from "./vitrine_repositoory.js"
 
 export async function get_dados_padaria(player:Player) {
         const dados_padaria_sql = await pool.query(`
@@ -24,3 +28,37 @@ export async function get_gas_atual(player:Player) {
     return gas_atual
 }
 
+export async function status_padaria(player:Player) {
+
+    const gas_atual = await get_gas_atual(player)
+    const nivel_gas = await get_nivel_gas(player)
+    const gas_max = get_gas_maximo(nivel_gas)
+
+    const massas_na_geladeira = await get_massas_geladeira_atual(player)
+    const pratos_na_vitrine = await get_pratos_vitrine_atual(player)
+
+    const nivel_geladeira = await get_nivel_geladeira(player)
+    const nivel_vitrine = await get_nivel_vitrine(player)
+
+    const nivel_rolo = await get_nivel_rolo(player)
+    const nivel_forno = await get_nivel_forno(player)
+
+    const max_espacos_geladeira = get_capacidade_geladeira(nivel_geladeira)
+    const max_espacos_vitrine = get_capacidade_vitrine(nivel_vitrine)
+
+    // dados legaia serem passados
+    // gas atual / gas_max
+    // massas na geladeira / max_massas na geladeira
+    // massas na vitrine / max_pratos_vitrine
+    // Já comprou receitas_compradas
+    // O rolo tá nivel: nivel_rolo
+    // E o forno está nivel: nivel_forno
+
+    console.log(player.nickname)
+    console.log("Gás: ", gas_atual+"/"+gas_max)
+    console.log(massas_na_geladeira+"/"+max_espacos_geladeira, "Massas na geladeira")
+    console.log(pratos_na_vitrine+"/"+max_espacos_vitrine, "Pratos na vitrine")
+    console.log("Já comprou:", player.receitas_compradas, "receitas")
+    console.log("O rolo tá nivel:", nivel_rolo)
+    console.log("E o forno está nivel:", nivel_forno)
+}

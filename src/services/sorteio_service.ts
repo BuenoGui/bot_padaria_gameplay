@@ -60,7 +60,8 @@ export async function sortearPlayer() {
         objeto_jogador_sorteado.nickname,
         objeto_jogador_sorteado.level,
         objeto_jogador_sorteado.xp,
-        Number(objeto_jogador_sorteado.dinheiro)
+        Number(objeto_jogador_sorteado.dinheiro),
+        objeto_jogador_sorteado.receitas_compradas
     );
     
     return jogador_sorteado;

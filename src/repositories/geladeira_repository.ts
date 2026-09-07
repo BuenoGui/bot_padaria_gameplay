@@ -21,7 +21,7 @@ export async function get_vezes_sovada(id_geladeira: number) {
 
 }
 
-export async function get_quantidade_geladeira_atual(player:Player) {
+export async function get_massas_geladeira_atual(player:Player) {
     
     const total_geladeira_obj = await pool.query(`
         SELECT COUNT(*)::INT AS total
@@ -30,7 +30,7 @@ export async function get_quantidade_geladeira_atual(player:Player) {
         [player.id_player]
     )
 
-    const  total_geladeira  = total_geladeira_obj.rows[0]
+    const  total_geladeira  = total_geladeira_obj.rows[0].total
     return total_geladeira
 
 }

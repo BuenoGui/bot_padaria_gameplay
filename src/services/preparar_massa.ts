@@ -4,7 +4,7 @@ import { sortear_id_massa_preparo } from "./sorteio_service.js";
 import { get_capacidade_geladeira,  xp_preparar } from "../utils/Formulas.js";
 import { get_raridade_receita, get_receita_nome, get_xp_raridade } from "../repositories/receita_repository.js";
 import { get_nivel_geladeira, get_nivel_rolo } from "../repositories/upgrade_repository.js";
-import { get_quantidade_geladeira_atual } from "../repositories/geladeira_repository.js";
+import { get_massas_geladeira_atual } from "../repositories/geladeira_repository.js";
 import { atualizar_xp } from "../repositories/player_repository.js";
 
 export async function preparar_massa(player: Player) {
@@ -18,7 +18,7 @@ export async function preparar_massa(player: Player) {
             return console.log("E acabou perdendo ela")
         }
         const nome_receita = await get_receita_nome(id_receita_sorteada)
-        const quantidade_geladeira_atual = await get_quantidade_geladeira_atual(player)
+        const quantidade_geladeira_atual = await get_massas_geladeira_atual(player)
         const receita_raridade = await get_raridade_receita(id_receita_sorteada)
         const xp_raridade = await get_xp_raridade(receita_raridade)
         const xp_recebido = xp_preparar(xp_raridade)
