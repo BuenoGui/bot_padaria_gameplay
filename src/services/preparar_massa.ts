@@ -17,15 +17,16 @@ export async function preparar_massa(player: Player) {
         if(!id_receita_sorteada) {
             return console.log("E acabou perdendo ela")
         }
+        const nivel_geladeira = await get_nivel_geladeira(player)
+        const capacidade_geladeira = get_capacidade_geladeira(nivel_geladeira)
         const nome_receita = await get_receita_nome(id_receita_sorteada)
         const quantidade_geladeira_atual = await get_massas_geladeira_atual(player)
         const receita_raridade = await get_raridade_receita(id_receita_sorteada)
         const xp_raridade = await get_xp_raridade(receita_raridade)
         const xp_recebido = xp_preparar(xp_raridade)
-        const nivel_geladeira = await get_nivel_geladeira(player)
 
-        if (quantidade_geladeira_atual >= get_capacidade_geladeira(nivel_geladeira)) {
-            console.log(`Sua geladeira está cheia! desculpa`)
+        if (quantidade_geladeira_atual >= capacidade_geladeira) {
+            console.log("Sua geladeira está cheia! desculpa")
             return
         }
         await pool.query(

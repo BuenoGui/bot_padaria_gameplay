@@ -1,6 +1,8 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
 import { xp_rankup } from "../utils/Formulas.js";
+import { loja_player } from "./loja_repository.js";
+import { status_padaria } from "./padaria_repository.js";
 
 export async function get_xp_player(player: Player) {
     const xp_player_obj = await pool.query(`
@@ -113,6 +115,13 @@ export async function status_player(player:Player) {
     console.log("Tem R$:" , player.dinheiro, "guardados")
 }
 
+export async function status(player:Player) {
+    await status_player(player)
+    console.log("-------------------------------------------------------------")
+    await status_padaria(player)
+    console.log("-------------------------------------------------------------")
+    await loja_player(player)
+}
 
 
 

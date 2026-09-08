@@ -17,7 +17,6 @@ import { get_receitas_padrao } from "../repositories/receita_repository.js";
 
 const conjunto_acoes = [
     async () => await vender(),
-    async () => await vender(),
     async () => await comprar_gas(await sortearPlayer()),
     async () => await comprar_gas(await sortearPlayer()),
     async () => await melhorar_gas(await sortearPlayer()),
@@ -158,7 +157,7 @@ for(const id_player of players_teste_ids) {
     console.log(id_player , "Criado!")
 }
 
-for (let i = 0; i <= 40000; i++) {
+for (let i = 0; i <= 7500; i++) {
     const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
     const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
         
