@@ -4,6 +4,9 @@ import { get_raridade_receita, get_xp_raridade } from "../repositories/receita_r
 import { dinheiro_venda, xp_cozinhar, sortInt } from "../utils/Formulas.js";
 
 export async function vender() {
+
+    let mensagem = ``
+
     const vitrine = await pool.query(
         `SELECT * FROM vitrines`
     )
@@ -75,16 +78,15 @@ export async function vender() {
                 [id_prato_vendido]
             )
 
-
+            const mensagem_xp = atualizar_xp(player , xp_recebido)
 
             // VENDIDO
+            mensagem += player.nickname + " recebeu: R$ " + dinheiro_recebido + " ao vender um prato: " + prato_feito.nome + "\n"
+            mensagem += mensagem_xp + "\n"
+            mensagem += "-------------------------------------------------------" + "\n"
 
-            console.log(id_player, "recebeu", dinheiro_recebido,"ao vender um prato: " , prato_feito.nome)
-            atualizar_xp(player , xp_recebido)
-
-        } else {
-            // NADA AINDA
-        }
-        
+        } 
     }
+
+    return mensagem
 }

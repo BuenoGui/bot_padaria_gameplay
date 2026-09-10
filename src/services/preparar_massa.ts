@@ -52,7 +52,7 @@ export async function preparar_massa(player: Player) {
         mensagem += "e deixou na geladeira. \n"
         mensagem += mensagem_xp
         mensagem += " pela receita \n"
-        mensagem += "--------------------------------------------- \n"
+        mensagem += "-------------------------------------------------------" + "\n"
 
         receitas_criadas += mensagem
     }

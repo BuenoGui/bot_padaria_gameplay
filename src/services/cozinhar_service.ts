@@ -18,7 +18,7 @@ export async function cozinhar(player: Player) {
         
         const massa_sorteada = await sortear_massa_prato(player)
         if (!massa_sorteada) {
-            continue
+            return mensagem + player.nickname + "sem massas na geladeira"
         }
 
         const id_massa_sorteada = massa_sorteada.id_geladeira
@@ -55,12 +55,12 @@ export async function cozinhar(player: Player) {
 
         
         if (espacos_vitrine_atual >= capacidade_vitrine) {
-            return `${player.nickname}, sua vitrine está CHEIA!`
+            return mensagem + player.nickname + " sua vitrine está CHEIA!"
         }
         
         const gas_atual = await get_gas_atual(player)
         if (gas_atual < gas_receita_sorteada) {
-            return `${player.nickname}, você está sem gás para a receita!`
+            return mensagem + player.nickname + "você está sem gás para a receita!"
         } else {
             await pool.query(
             `UPDATE padarias
@@ -97,9 +97,10 @@ export async function cozinhar(player: Player) {
         const mensagem_xp = String(await atualizar_xp(player, xp_recebido))
 
         mensagem += player.nickname + " cozinhou um/a: " + nome_receita + " de raridade "+ receita_raridade + "\n"
-        mensagem += "e com "+ estrela_sorteada + estrelas_texto + "\n"
+        mensagem += "e com " + estrela_sorteada + estrelas_texto + "\n"
         mensagem += mensagem_xp
-        mensagem += " pela destreza na cozinha!"
+        mensagem += " pela destreza na cozinha!" + "\n"
+        mensagem += "-------------------------------------------------------" + "\n"
 
         pratos_criados += mensagem
     }

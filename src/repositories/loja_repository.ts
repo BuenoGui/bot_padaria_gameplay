@@ -26,18 +26,20 @@ export async function loja_player(player:Player) {
 
     const dinheiro_player = await get_dinheiro_player(player)
 
+    const dinheiro_player_texto = String(dinheiro_player).replace(".", ",")
 
-    mensagem += player.nickname + " você tem: R$ " + dinheiro_player + "\n"
+
+    mensagem += player.nickname + " você tem: R$ " + dinheiro_player_texto + "\n"
     mensagem += "/comprar gas" + "\n"
-    mensagem += "+ 10 gás para sua padaria --->  R$: " +  preco_gas + ",00" + "\n"
-    mensagem += "/comprar gas total" + "\n"
-    mensagem += "+10 de gás total para sua padaria --->  R$: " + preco_upgrade_gas + ",00" + "\n"
+    mensagem += "+ 10 gás para sua padaria --->  R$: " +  preco_gas + ",00" + "\n\n"
+    mensagem += "/melhorar gas" + "\n"
+    mensagem += "+10 de gás total para sua padaria --->  R$: " + preco_upgrade_gas + ",00" + "\n\n"
     mensagem += "/melhorar geladeira" + "\n"
-    mensagem += "+5 espaços na sua geladeira --->  R$: " + preco_upgrade_geladeira + ",00" + "\n"
+    mensagem += "+5 espaços na sua geladeira --->  R$: " + preco_upgrade_geladeira + ",00" + "\n\n"
     mensagem += "/melhorar vitrine" + "\n"
-    mensagem += "+2 espaços na vitrine da sua padaria --->  R$: " + preco_upgrade_vitrine + ",00" + "\n"
+    mensagem += "+2 espaços na vitrine da sua padaria --->  R$: " + preco_upgrade_vitrine + ",00" + "\n\n"
     mensagem += "/melhorar rolo" + "\n"
-    mensagem += "Pode preparar +1 massa por vez na geladeira --->  R$: " + preco_upgrade_rolo + ",00" + "\n"
+    mensagem += "Pode preparar +1 massa por vez na geladeira --->  R$: " + preco_upgrade_rolo + ",00" + "\n\n"
     mensagem += "/melhorar forno" + "\n"
     mensagem += "Pode assar +1 prato por vez no seu forno --->  R$: " + preco_upgrade_forno + ",00" + "\n"
 
