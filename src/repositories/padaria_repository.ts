@@ -24,11 +24,26 @@ export async function get_gas_atual(player:Player) {
         = $1`, [player.id_player]
     )
 
+    if (gas_atual_obj.rows.length === 0 ) {
+        const gas_atual_obj = await pool.query(`
+                INSERT INTO padarias (id_player)
+                VALUES ($1) ON CONFLICT DO NOTHING
+                RETURNING gas_atual`,
+            [player.id_player]
+        )
+
+        const { gas_atual } = gas_atual_obj.rows[0]
+        return gas_atual
+
+    }
+
     const { gas_atual } = gas_atual_obj.rows[0]
     return gas_atual
 }
 
 export async function status_padaria(player:Player) {
+    
+    let mensagem = ``
 
     const gas_atual = await get_gas_atual(player)
     const nivel_gas = await get_nivel_gas(player)
@@ -54,11 +69,13 @@ export async function status_padaria(player:Player) {
     // O rolo tá nivel: nivel_rolo
     // E o forno está nivel: nivel_forno
 
-    console.log(player.nickname)
-    console.log("Gás: ", gas_atual+"/"+gas_max)
-    console.log(massas_na_geladeira+"/"+max_espacos_geladeira, "Massas na geladeira")
-    console.log(pratos_na_vitrine+"/"+max_espacos_vitrine, "Pratos na vitrine")
-    console.log("Já comprou:", player.receitas_compradas, "receitas")
-    console.log("O rolo tá nivel:", nivel_rolo)
-    console.log("E o forno está nivel:", nivel_forno)
+    mensagem += player.nickname + "\n"
+    mensagem += "Gás: "+ gas_atual + "/" + gas_max + "\n"
+    mensagem +=  massas_na_geladeira + "/" + max_espacos_geladeira + " Massas na geladeira" + "\n"
+    mensagem +=  pratos_na_vitrine + "/" + max_espacos_vitrine + " Pratos na vitrine" + "\n"
+    mensagem +=  "Já comprou: " + player.receitas_compradas + " receitas" + "\n"
+    mensagem +=  "O rolo tá nivel: " + nivel_rolo + "\n"
+    mensagem +=  "E o forno está nivel: " + nivel_forno
+
+    return mensagem
 }

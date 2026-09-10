@@ -1,4 +1,8 @@
+.gitignore
 node_modules
 .env
 src/services/tests/*
 src/database/tests/*
+auth_info_baileys
+src/lixo.txt
+src/whatsapp/dados_connections.ts

@@ -1,22 +1,37 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
-import { get_receitas_raridade_sorteada } from "../repositories/receita_repository.js";
+import { get_receitas_padrao, get_receitas_player, get_receitas_raridade_sorteada } from "../repositories/receita_repository.js";
 import { RNG_raridade_receita, sortInt } from "../utils/Formulas.js";
 
 
 export async function sortear_id_massa_preparo(player: Player) {
 
     const raridade_sorteada = RNG_raridade_receita(player.level)
-    const lista_receitas_sorteadas = await get_receitas_raridade_sorteada(player, raridade_sorteada)
+    let lista_receitas = await get_receitas_raridade_sorteada(player, raridade_sorteada)
 
-    if(!lista_receitas_sorteadas || lista_receitas_sorteadas.length === 0) {
-        console.log(player.id_player, "Infelizmente, por sua falta de Experiencia você errou a mão em uma massa: ", raridade_sorteada)
-        return
+    if(!lista_receitas || lista_receitas.length === 0) {
+
+        const receitas_padrao = await get_receitas_padrao();
+
+        for(const receita of receitas_padrao) {
+            await pool.query(`
+                INSERT INTO receitas_player (id_receita, id_player)
+                VALUES ($1, $2) ON CONFLICT DO NOTHING;`,
+                [receita.id_receita, player.id_player]
+            );
+        }
+
+        lista_receitas = await get_receitas_player(Number(player.id_player))
+
     }
 
-    const index = sortInt(0, lista_receitas_sorteadas.length - 1)
+    if(!lista_receitas || lista_receitas.length === 0) {
+        return "Infelizmente, por sua falta de Experiencia você errou a mão em uma massa: " + raridade_sorteada
+    }
 
-    return lista_receitas_sorteadas[index].id_receita
+    const index = sortInt(0, lista_receitas.length - 1)
+
+    return lista_receitas[index].id_receita
 
 
 }
@@ -56,7 +71,7 @@ export async function sortearPlayer() {
 
     const jogador_sorteado = new Player (
         objeto_jogador_sorteado.id_player,
-        objeto_jogador_sorteado.tell,
+        objeto_jogador_sorteado.lid,
         objeto_jogador_sorteado.nickname,
         objeto_jogador_sorteado.level,
         objeto_jogador_sorteado.xp,

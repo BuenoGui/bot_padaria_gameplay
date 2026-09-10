@@ -97,17 +97,17 @@ const receitas_padrao = await get_receitas_padrao()
 
 // CHECA QUAIS PLAYERS DE TESTE EXISTEM
 for(const player of players_teste) {
-    const player_tell_obj = await pool.query(`
+    const player_lid_obj = await pool.query(`
         SELECT id_player
         FROM players
-        WHERE tell = $1
+        WHERE lid = $1
         `, [player]
         )
 
-    if(player_tell_obj.rows.length === 0) {
+    if(player_lid_obj.rows.length === 0) {
         players_restantes.push(player)
     } else {
-        const { id_player } = player_tell_obj.rows[0]
+        const { id_player } = player_lid_obj.rows[0]
         players_teste_ids.push(id_player)
     }
 
@@ -119,7 +119,7 @@ if (players_restantes.length > 0) {
 
         const id_player_obj = await pool.query(`
             INSERT INTO players
-            (tell, nickname)
+            (lid, nickname)
             VALUES
             ($1, $2)
             RETURNING id_player`,
@@ -157,10 +157,11 @@ for(const id_player of players_teste_ids) {
     console.log(id_player , "Criado!")
 }
 
-for (let i = 0; i <= 7500; i++) {
+for (let i = 0; i <= 2000; i++) {
+    
     const indexes_sorteado = sortInt(0, conjunto_acoes.length - 1)
     const acao_sorteada = await conjunto_acoes[indexes_sorteado]?.()
-        
+
     acao_sorteada
 }
 

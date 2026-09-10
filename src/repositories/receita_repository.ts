@@ -16,6 +16,22 @@ export async function get_receitas_padrao() {
 
 }
 
+export async function get_receitas_player(id_player: number) {
+    
+    const receitas_player_obj = await pool.query(`
+        SELECT *  
+        FROM receitas_player
+        WHERE id_player
+        = $1`,
+        [id_player]
+    )
+
+    const total = receitas_player_obj.rows
+
+    return total
+
+}
+
 export async function get_xp_raridade(raridade_nome: string) {
     const xp_raridade_obj = await pool.query(`
         SELECT xp_raridade
@@ -39,7 +55,7 @@ export async function get_receita_nome(id_receita: number) {
         [id_receita])
 
         const { nome } = receita_nome_obj.rows[0]
-        return nome
+        return String(nome.toLowerCase())
 }
 
 export async function get_gas_receita(id_receita: number) {
@@ -79,7 +95,7 @@ export async function get_raridade_receita(id_receita: number) {
         return raridade
 }
 
-export async function get_receitas_players(player: Player) {
+export async function get_receitas_compradas_players(player: Player) {
     
     const receitas_compradas_obj = await pool.query(`
         SELECT receitas_compradas  
@@ -126,6 +142,10 @@ export async function get_receitas_raridade_sorteada(player: Player, raridade_no
         [player.id_player, raridade_nome]
         )
 
+    if(!lista_receitas_raridade_sorteada_sql) {
+        return "Sem tabela de receitas criada para o player"
+    }
+
     const lista_receitas_raridade_sorteada = lista_receitas_raridade_sorteada_sql.rows
 
     
@@ -151,10 +171,9 @@ export async function adicionar_receita_player(player: Player, id_receita: numbe
         [player.id_player, id_receita]
         )
 
-    const id_linha = linha_nova
+    const { id_receitas_player }= linha_nova.rows[0]
     
-    console.log(id_linha)
-    console.log(player.id_player)
+    console.log(player.nickname,"comprou uma receita nova", id_receitas_player + ": receita adquirida no game")
 
     return 
 }

@@ -1,6 +1,6 @@
 import pool from "../database/connection.js";
 import type Player from "../entities/Player.js";
-import { dinheiro_venda, get_capacidade_vitrine } from "../utils/Formulas.js";
+import { get_capacidade_vitrine } from "../utils/Formulas.js";
 import { get_raridade_receita, get_receita_nome } from "./receita_repository.js";
 import { get_nivel_vitrine } from "./upgrade_repository.js";
 
@@ -22,6 +22,8 @@ export async function get_pratos_vitrine_atual(player: Player) {
 export async function status_vitrine(player:Player) {
 
     let contador = 1
+    let mensagem = ``
+
 
     const vitrine_obj = await pool.query(`
         SELECT * 
@@ -37,8 +39,8 @@ export async function status_vitrine(player:Player) {
 
     const vitrine = vitrine_obj.rows
 
-    console.log("Capacidade da vitrine")
-    console.log(quantidade_vitrine+"/"+max_vitrine)
+    mensagem += "Capacidade da vitrine" + "\n"
+    mensagem += quantidade_vitrine + "/" + max_vitrine + "\n"
 
     for(const item_vitrine of vitrine) {
 
@@ -53,11 +55,13 @@ export async function status_vitrine(player:Player) {
         }
 
 
-        console.log(contador+".", nome_receita)
-        console.log(raridade_receita)
-        console.log("Com", item_vitrine.estrelas+quantidade_estrelas)
-        console.log("------------------------------------------------------------")
+        mensagem += contador + " - " + nome_receita + "\n"
+        mensagem += raridade_receita + "\n"
+        mensagem += "Com" + item_vitrine.estrelas + quantidade_estrelas + "\n"
+        mensagem += "-------------------------------------------------------" + "\n"
         contador++
-    }   
+    }
+
+    return String(mensagem)
 
 }

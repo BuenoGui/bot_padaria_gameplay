@@ -41,6 +41,7 @@ export async function get_massas_geladeira_atual(player:Player) {
 export async function status_geladeira(player:Player) {
 
     let contador = 1
+    let status_geladeira_texto = `Capacidade da geladeira \n`
 
     const geladeira_obj = await pool.query(`
         SELECT * 
@@ -56,19 +57,20 @@ export async function status_geladeira(player:Player) {
 
     const geladeira = geladeira_obj.rows
 
-    console.log("Capacidade da geladeira")
-    console.log(quantidade_geladeira+"/"+max_geladeira)
+    status_geladeira_texto += quantidade_geladeira + "/" + max_geladeira + "\n"
 
     for(const item_geladeira of geladeira) {
         
         const nome_receita = await get_receita_nome(item_geladeira.id_receita)
         const raridade_receita = await get_raridade_receita(item_geladeira.id_receita)
 
-        console.log(contador+".", nome_receita)
-        console.log(raridade_receita)
-        console.log("Sovado:", item_geladeira.vezes_sovado + "x")
-        console.log("------------------------------------------------------------")
+        status_geladeira_texto += contador+ " - " + nome_receita + "\n"
+        status_geladeira_texto += raridade_receita + "\n"
+        status_geladeira_texto += "Sovado: "+ item_geladeira.vezes_sovado + "x" + "\n"
+        status_geladeira_texto += "-------------------------------------------------------" + "\n"
         contador++
-    }   
+    }
+
+    return String(status_geladeira_texto)
 
 }

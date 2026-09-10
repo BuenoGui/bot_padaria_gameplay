@@ -10,13 +10,19 @@ import { atualizar_xp } from "../repositories/player_repository.js";
 export async function preparar_massa(player: Player) {
     
     const nivel_rolo = await get_nivel_rolo(player)
+    let receitas_criadas = ``
 
-    for (let i = 0; i < nivel_rolo; i++) {
+    for (let i = 0; i <= nivel_rolo; i++) {
+
+        let mensagem = `` 
 
         const id_receita_sorteada = await sortear_id_massa_preparo(player);
-        if(!id_receita_sorteada) {
-            return console.log("E acabou perdendo ela")
+
+        const raridade_receita = await get_raridade_receita(id_receita_sorteada)
+        if(!id_receita_sorteada || id_receita_sorteada === undefined) {
+            return "Errou a mão na receita e perdeu uma massa:" + raridade_receita
         }
+
         const nivel_geladeira = await get_nivel_geladeira(player)
         const capacidade_geladeira = get_capacidade_geladeira(nivel_geladeira)
         const nome_receita = await get_receita_nome(id_receita_sorteada)
@@ -26,8 +32,7 @@ export async function preparar_massa(player: Player) {
         const xp_recebido = xp_preparar(xp_raridade)
 
         if (quantidade_geladeira_atual >= capacidade_geladeira) {
-            console.log("Sua geladeira está cheia! desculpa")
-            return
+            return "Sua geladeira está cheia! desculpa"
         }
         await pool.query(
             `INSERT INTO geladeiras
@@ -40,10 +45,18 @@ export async function preparar_massa(player: Player) {
             [player.id_player,
             id_receita_sorteada]
         )
-        
-        console.log(player.nickname, "deixou uma massa de:" , nome_receita, "na geladeira")
-        atualizar_xp(player, xp_recebido)
 
+        const mensagem_xp = String(await atualizar_xp(player, xp_recebido))
+
+        mensagem += "Criou um/a: " + nome_receita + " de raridade "+ receita_raridade + "\n"
+        mensagem += "e deixou na geladeira. \n"
+        mensagem += mensagem_xp
+        mensagem += " pela receita \n"
+        mensagem += "--------------------------------------------- \n"
+
+        receitas_criadas += mensagem
     }
+
+    return receitas_criadas
 
 }

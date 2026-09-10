@@ -1,7 +1,7 @@
 import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
 import { xp_rankup } from "../utils/Formulas.js";
-import { loja_player } from "./loja_repository.js";
+import { get_whats_nickname } from "../whatsapp/formulas.js";
 import { status_padaria } from "./padaria_repository.js";
 
 export async function get_xp_player(player: Player) {
@@ -11,6 +11,11 @@ export async function get_xp_player(player: Player) {
         WHERE id_player
         = $1`, [player.id_player]
     )
+
+    // RETORNA 0 SE FOR A PRIMEIRA VEZ DO PLAYER
+    if (xp_player_obj.rows.length === 0) {
+        return 0
+    }
 
     const { xp } = xp_player_obj.rows[0]
     return xp
@@ -26,6 +31,29 @@ export async function get_level_player(player: Player) {
 
     const { level } = level_player_obj.rows[0]
     return level
+}
+
+export async function get_player_id(lid_player: string, mensagem: any) {
+
+    const lid_player_obj = await pool.query(`
+        SELECT id_player
+        FROM players 
+        WHERE lid = $1`,
+        [lid_player]
+    )
+
+    if(lid_player_obj.rows.length === 0) {
+        const nickname = await get_whats_nickname(mensagem)
+
+        const id_player = await criar_player(lid_player, nickname)
+
+        return id_player
+        
+    }
+
+    const { id_player } = lid_player_obj.rows[0]
+
+    return id_player
 }
 
 export async function get_dinheiro_player(player: Player) {
@@ -100,7 +128,7 @@ export async function atualizar_xp(player: Player, xp_recebido: number) {
         return console.log(player.nickname, "Subiu de nivel! Agora é level:", level_player)
     }
 
-    console.log(player.id_player, "Recebeu +", xp_recebido, "XP")
+    return `${player.nickname}, recebeu + ${xp_recebido}XP`
 }
 
 export async function status_player(player:Player) {
@@ -120,13 +148,43 @@ export async function status(player:Player) {
     console.log("-------------------------------------------------------------")
     await status_padaria(player)
     console.log("-------------------------------------------------------------")
-    await loja_player(player)
 }
 
+export async function get_player_nickname(lid_player: string) {
 
+    const player_nickname_obj = await pool.query(`
+        SELECT nickname
+        FROM players 
+        WHERE lid = $1`,
+        [lid_player]
+    )
 
+    if(!player_nickname_obj) {
+        return console.log("Player não criado")
+    }
 
+    const { nickname } = player_nickname_obj.rows[0]
 
+    return nickname
+}
+
+export async function get_player_lid(player: Player) {
+
+    const player_lid_obj = await pool.query(`
+        SELECT lid
+        FROM players 
+        WHERE id_player = $1`,
+        [player.id_player]
+    )
+
+    if(!player_lid_obj) {
+        return console.log("Player não criado")
+    }
+
+    const { lid } = player_lid_obj.rows[0]
+
+    return lid
+}
 
 
 
@@ -144,7 +202,7 @@ export async function construir_player(id_player: number) {
 
     const player = new Player (
         dados_player.id_player,
-        dados_player.tell,
+        dados_player.lid,
         dados_player.nickname,
         dados_player.level,
         dados_player.xp,
@@ -153,5 +211,20 @@ export async function construir_player(id_player: number) {
     )
     
     return player
+
+}
+
+export async function criar_player(lid: string, nickname: string) {
+
+    const id_player_obj = await pool.query(`
+        INSERT INTO players (lid, nickname)
+        VALUES ($1, $2)
+        RETURNING id_player`,
+        [lid, nickname]    
+    )
+
+    const { id_player } = id_player_obj.rows[0]
+    
+    return id_player
 
 }

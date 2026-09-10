@@ -1,4 +1,4 @@
-INSERT INTO players (tell, nickname)
+INSERT INTO players (lid, nickname)
 VALUES 
     ('11912345678', 'JOSEFINA'),
     ('11911111111','Carlos eduardo'),
