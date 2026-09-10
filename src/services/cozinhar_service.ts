@@ -55,14 +55,12 @@ export async function cozinhar(player: Player) {
 
         
         if (espacos_vitrine_atual >= capacidade_vitrine) {
-            console.log(player.id_player,"Sua vitrine está cheia!")
-            break 
+            return `${player.nickname}, sua vitrine está CHEIA!`
         }
         
         const gas_atual = await get_gas_atual(player)
         if (gas_atual < gas_receita_sorteada) {
-            console.log(player.id_player, "Sem gás para a receita")
-            break
+            return `${player.nickname}, você está sem gás para a receita!`
         } else {
             await pool.query(
             `UPDATE padarias

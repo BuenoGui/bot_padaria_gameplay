@@ -16,11 +16,11 @@ export async function comprar_gas(player: Player) {
     const preco_upgrade = 30
 
     if(player.dinheiro < preco_upgrade) {
-        return console.log(player.id_player, "Sem dinheiro para comprar gás")
+        return `${player.nickname}, você não tem dinheiro para comprar gás :(`
     }
 
     if (gas_atual === gas_max) {
-        return console.log ([player.id_player], "seu gás está cheio")
+        return `${player.nickname} seu gás já está cheio, bocó :P`
     }
    
     const gas_novo_player = gas_atual + 10;
@@ -49,7 +49,7 @@ export async function comprar_gas(player: Player) {
 
     await atualizar_dinheiro_upgrade(player, preco_upgrade)
 
-    return console.log(player.id_player, "+10 de gás na sua padaria")
+    return `${player.nickname}, +10 de gás na sua padaria (e mais dinheiro pra mim HEHE)`
 }
 
 export async function melhorar_gas(player: Player) {

@@ -58,7 +58,7 @@ export async function get_player_id(lid_player: string, mensagem: any) {
 
 export async function get_dinheiro_player(player: Player) {
     const dinheiro_player_obj = await pool.query(`
-        SELECT level
+        SELECT dinheiro
         FROM players
         WHERE id_player
         = $1`, [player.id_player]

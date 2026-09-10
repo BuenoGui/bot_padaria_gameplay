@@ -4,8 +4,8 @@ const textos_comandos = [
     "/comandos ---> cita todos os comandos desenvolvidos", "\n",
     "/nick {seu_nick} ---> define um nome para você de até 20 caracteres", "\n",
     "/sovar ---> Você prepara uma massa e a deixa na sua geladeira", "\n",
-    "/geladeira ---> Você pode ver as massas que você sovou e deixou na geladeira", "\n",
     "/assar ---> Você cozinha uma massa da geladeira e a deixa para ser vendida na vitrine", "\n",
+    "/geladeira ---> Você pode ver as massas que você sovou e deixou na geladeira", "\n",
     "/vitrine ---> Você pode ver seus pratos que estão para serem vendidos", "\n",
     "/padaria ---> Você pode ver os dados da sua padaria, como seu gás"
 ]

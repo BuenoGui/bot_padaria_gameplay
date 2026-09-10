@@ -72,19 +72,19 @@ export function preco_gas_total(gas_total_player: number) {
 }
 
 export function preco_geladeira(nivel_geladeira: number) {
-    return (nivel_geladeira ** 2) * (nivel_geladeira *20)
+    return ((1 + nivel_geladeira) ** 2) * ((3 + nivel_geladeira) *20)
 }
 
 export function preco_vitrine(nivel_vitrine: number) {
-    return (nivel_vitrine ** 3) * ((nivel_vitrine * 3) + 62)
+    return ((nivel_vitrine + 1 ) ** 3) * (((nivel_vitrine + 4) * 2) + 62)
 }
 
 export function preco_rolo(nivel_rolo: number) {
-    return nivel_rolo ** 7 + (nivel_rolo * 15) * (nivel_rolo * 15)
+    return 1 + nivel_rolo ** 7 + ((1 + nivel_rolo) * 15) * ((1 + nivel_rolo) * 15)
 }
 
 export function preco_forno(nivel_forno: number) {
-    return (nivel_forno * 20) + ((nivel_forno*35) * ((nivel_forno*4)**2))
+    return ((nivel_forno + 1 ) * 20) + (((nivel_forno + 1 )*35) * (((nivel_forno + 1 )*4)**2))
 }
 
 export function preco_receita(receitas_compradas: number) {
