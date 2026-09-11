@@ -20,7 +20,7 @@ export async function preparar_massa(player: Player) {
 
         const raridade_receita = await get_raridade_receita(id_receita_sorteada)
         if(!id_receita_sorteada || id_receita_sorteada === undefined) {
-            return "Errou a mão na receita e perdeu uma massa:" + raridade_receita
+            return receitas_criadas + player.nickname + " você errou a mão na receita e perdeu uma massa:" + raridade_receita
         }
 
         const nivel_geladeira = await get_nivel_geladeira(player)
@@ -32,16 +32,13 @@ export async function preparar_massa(player: Player) {
         const xp_recebido = xp_preparar(xp_raridade)
 
         if (quantidade_geladeira_atual >= capacidade_geladeira) {
-            return "Sua geladeira está cheia! desculpa"
+            return receitas_criadas + player.nickname + " sua geladeira está cheia! desculpa"
         }
         await pool.query(
             `INSERT INTO geladeiras
             (id_player, id_receita)
             VALUES
-            ($1, $2)
-            RETURNING
-            id_geladeira`
-            ,
+            ($1, $2)`,
             [player.id_player,
             id_receita_sorteada]
         )

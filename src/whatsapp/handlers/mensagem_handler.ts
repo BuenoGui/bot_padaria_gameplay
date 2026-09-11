@@ -1,5 +1,5 @@
-import { get_id_geladeira_player } from "../../repositories/geladeira_repository.js"
-import { get_player_id } from "../../repositories/player_repository.js"
+import { get_id_geladeira } from "../../repositories/geladeira_repository.js"
+import { get_player_id, get_player_nickname } from "../../repositories/player_repository.js"
 import { texto_comandos } from "../commands/comandos.js"
 import { comprar_gas_comando } from "../commands/comprar_gas.js"
 import { cozinhar_comando } from "../commands/cozinhar.js"
@@ -77,17 +77,20 @@ export async function processar_mensagem(sock:any, mensagem:any) {
         )
         }
 
-        // PENDENTE
-        // if(Number(sovar_mensagem[1])) {
-        //     const id_geladeira_player = Number(sovar_mensagem[1])
-        //     const id_geladeira = await get_id_geladeira_player(id_player, id_geladeira_player)
+        if(Number(sovar_mensagem[1])) {
+            const id_geladeira_player = Number(sovar_mensagem[1])
+            const id_geladeira = await get_id_geladeira(id_player, id_geladeira_player)
 
-        //     const mensagem_sovado = await sovar_massa_comando(id_player, id_geladeira)
-        //     return await sock.sendMessage(
-        //     mensagem.key.remoteJid!,
-        //     {text: mensagem_sovado}
-        //     )
-        // }
+            if(!id_geladeira) {
+                return " não tem essa massa na sua geladeira, doido"
+            }
+
+            const mensagem_sovado = await sovar_massa_comando(id_player, id_geladeira)
+            return await sock.sendMessage(
+            mensagem.key.remoteJid!,
+            {text: mensagem_sovado}
+            )
+        }
 
     }
 
@@ -170,21 +173,46 @@ export async function processar_mensagem(sock:any, mensagem:any) {
         const mensagem_gas = texto_formatado.split("/comprar gas")
 
         // quantos gás a pessoa quer comprar?
-        if (!isNaN(Number(mensagem_gas[1]))) {            
+        if (Number(mensagem_gas[1])) {            
             const vezes_acao = Number(mensagem_gas[1])
+            let total_gas_comprado = 0
+            let mensagem_final = ""
+            let mensagem_parada = ""
+            let parou = false
+
+            const nickname = await get_player_nickname(lid)
+
 
 
             for(let i = 0; i < vezes_acao; i++) {
                 // envia o comando para ser executado
                 const gas_texto = await comprar_gas_comando(id_player)
-                // responde o player
-                await sock.sendMessage(
-                    mensagem.key.remoteJid!,
-                    {text: gas_texto}
-                )
+
+                if(gas_texto.includes("+10")) {
+                    total_gas_comprado += 10
+                } else if (gas_texto.includes("você não tem dinheiro")|| gas_texto.includes("seu gás já está cheio")){
+                    parou  = true
+                    mensagem_parada += gas_texto
+                    break
+                }
+
+
             }
             
-            return
+            if(parou === false) {
+                mensagem_final += nickname + " você comprou: +" + total_gas_comprado + " de gás pra sua cozinha!!"
+            } else {
+                mensagem_final += nickname + " você comprou: +" + total_gas_comprado + "de gás. Mas..." +"\n"
+                mensagem_final += mensagem_parada
+            }
+
+            // responde o player
+                await sock.sendMessage(
+                    mensagem.key.remoteJid!,
+                    {text: mensagem_final}
+                )
+
+
         }
         
     }

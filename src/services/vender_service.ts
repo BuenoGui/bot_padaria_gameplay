@@ -26,7 +26,7 @@ export async function vender() {
 
         // DADOS DO PRATO ATUAL
         const id_receita = prato.id_receita;
-        const dados_prato = lista_receitas[id_receita];
+        const dados_prato = lista_receitas.find(receita => receita.id_receita === id_receita);
 
         const id_player = prato.id_player;
         const player = await construir_player(id_player)
@@ -78,7 +78,7 @@ export async function vender() {
                 [id_prato_vendido]
             )
 
-            const mensagem_xp = atualizar_xp(player , xp_recebido)
+            const mensagem_xp = await atualizar_xp(player , xp_recebido)
 
             // VENDIDO
             mensagem += player.nickname + " recebeu: R$ " + dinheiro_recebido + " ao vender um prato: " + prato_feito.nome + "\n"

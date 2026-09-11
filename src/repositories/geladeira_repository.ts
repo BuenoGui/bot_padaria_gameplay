@@ -76,6 +76,13 @@ export async function status_geladeira(player:Player) {
 }
 
 export async function get_id_geladeira(id_player: number, id_geladeira_player: number) {
+
+    const offset = id_geladeira_player - 1
+
+    if(id_geladeira_player < 0) {
+        return " você não quer sovar nada"
+    }
+
     const id_geladeira_obj = await pool.query(`
         SELECT id_geladeira
         FROM geladeiras
@@ -83,14 +90,13 @@ export async function get_id_geladeira(id_player: number, id_geladeira_player: n
         ORDER BY id_geladeira ASC
         LIMIT 1
         OFFSET $2`,
-        [id_player, id_geladeira_player]
+        [id_player, offset]
         )
 
     console.log(id_geladeira_obj)
 
     if(id_geladeira_obj.rows.length === 0) {
-        console.log("Nenhuma massa na geladeira para ser sovada")
-        return
+        return "Nenhuma massa na geladeira para ser sovada"
     }
 
     const { id_geladeira } = id_geladeira_obj.rows[0]
