@@ -28,8 +28,8 @@ export async function loja_player(player:Player) {
 
     const dinheiro_player_texto = String(dinheiro_player).replace(".", ",")
 
-
     mensagem += player.nickname + " você tem: R$ " + dinheiro_player_texto + "\n"
+    mensagem += "--------------------------------------------------" + "\n\n"
     mensagem += "/comprar gas" + "\n"
     mensagem += "+ 10 gás para sua padaria --->  R$: " +  preco_gas + ",00" + "\n\n"
     mensagem += "/melhorar gas" + "\n"

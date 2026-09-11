@@ -47,7 +47,8 @@ export async function status_geladeira(player:Player) {
         SELECT * 
         FROM geladeiras
         WHERE id_player
-        = $1`,
+        = $1
+        ORDER BY id_geladeira`,
         [player.id_player]
     )
 

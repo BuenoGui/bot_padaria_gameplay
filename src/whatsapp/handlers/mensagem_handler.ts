@@ -1,5 +1,6 @@
 import { get_id_geladeira } from "../../repositories/geladeira_repository.js"
-import { get_player_id, get_player_nickname } from "../../repositories/player_repository.js"
+import { construir_player, get_player_id, get_player_nickname } from "../../repositories/player_repository.js"
+import { separar_comando } from "../comando_parser.js"
 import { texto_comandos } from "../commands/comandos.js"
 import { comprar_gas_comando } from "../commands/comprar_gas.js"
 import { cozinhar_comando } from "../commands/cozinhar.js"
@@ -16,19 +17,29 @@ import { preparar_massa_comando } from "../commands/preparar_massa.js"
 import { sovar_massa_comando } from "../commands/sovar_massa.js"
 import { mostrar_vitrine_comando } from "../commands/vitrine.js"
 
+const dicionario_comandos_player = {
+    "/sovar": preparar_massa_comando,
+    "/assar": cozinhar_comando,
+    "/geladeira": mostrar_geladeira_comando,
+    "/vitrine": mostrar_vitrine_comando,
+    "/padaria": padaria_comando,
+    // "/nick": mudar_nick
+}
+
+const dicionario_comandos_loja = {
+    "/loja": loja_comando,
+    "/comprar gas": comprar_gas_comando,
+    "/melhorar gas": melhorar_gas_comando,
+    "melhorar geladeira": melhorar_geladeira_comando,
+    "melhorar vitrine": melhorar_vitrine_comando,
+    "/melhorar rolo": melhorar_rolo_comando,
+    "/melhorar forno": melhorar_forno_comando,
+}
 
 export async function processar_mensagem(sock:any, mensagem:any) {
-    
+
     const texto:string  = mensagem.message?.conversation || mensagem.message?.extendedTextMessage?.text
     if (!texto) return
-
-    const texto_formatado = texto.toLowerCase().trim()
-
-    const lid = mensagem.key.participant
-    if(!lid) {
-        return console.log("sem lid, quem é você?")
-    }
-
     if (texto.substring(0, 1) !== "/") {
         console.log(mensagem)
         console.log("----------------------------------------------------------")
@@ -37,6 +48,8 @@ export async function processar_mensagem(sock:any, mensagem:any) {
         return
     }
 
+    const texto_formatado = texto.toLowerCase().trim()
+
     if (texto_formatado === "/comandos") {
         return await sock.sendMessage(
             mensagem.key.remoteJid!,
@@ -44,248 +57,95 @@ export async function processar_mensagem(sock:any, mensagem:any) {
             )
     }
 
-    // CRIAR VALIDAÇÕES
-    // TEM QUE EXCLUIR O ANTIGO PLAYER DA TABELA
-    if (texto_formatado.includes("/nick")) {
-        const linha_comando = texto.split("/nick")
-        const nickname = String(linha_comando[1]?.trim())
+    const lid = mensagem.key.participant
 
-        const id_player = await get_player_id(lid, mensagem)
-
-        const novo_nickname = await mudar_nick(nickname, lid)
-
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: `Seu novo nick agora é: ${novo_nickname}`}
-        )
-
+    if(!lid) {
+        return console.log("sem lid, quem é você?")
     }
 
-    if(texto_formatado.includes("/sovar")) {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
+    const dados_comando = separar_comando(texto_formatado)
+    const comando = dados_comando.comando
+    const argumento = dados_comando.argumento
 
-        const sovar_mensagem = texto_formatado.split("/sovar")
-        // envia o comando para ser executado
-        if(texto_formatado === "/sovar") {
-        const receita_criada_texto = await preparar_massa_comando(id_player)
+    console.log("Comando: " + dados_comando.comando)
+    console.log("Argumento: " + dados_comando.argumento)
 
-        // envia a massa preparada como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: receita_criada_texto}
-        )
-        }
+    if(comando === "") {
+        return "COMANDO INVALIDO"
+    }
 
-        if(Number(sovar_mensagem[1])) {
-            const id_geladeira_player = Number(sovar_mensagem[1])
-            const id_geladeira = await get_id_geladeira(id_player, id_geladeira_player)
+    // pega o id do player
+    const id_player = await get_player_id(lid, mensagem)
 
-            if(!id_geladeira) {
-                return " não tem essa massa na sua geladeira, doido"
-            }
-
-            const mensagem_sovado = await sovar_massa_comando(id_player, id_geladeira)
+    // Se o comando está no dicionario do player
+    if (comando in dicionario_comandos_player) {
+        
+        if(comando === "/sovar" && argumento >= 1) {
+            const texto_resposta = await sovar_massa_comando(id_player, await get_id_geladeira(id_player, argumento))
+            
             return await sock.sendMessage(
             mensagem.key.remoteJid!,
-            {text: mensagem_sovado}
-            )
+            {text: texto_resposta}
+        )
+            
         }
 
-    }
+        // pega a função pra ser executada
+        const comando_player = dicionario_comandos_player[comando as keyof typeof dicionario_comandos_player]
 
-    if(texto_formatado === "/assar") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
 
-        // envia o comando para ser executado
-        const prato_criado_texto = await cozinhar_comando(id_player)
+        const texto_resposta = await comando_player(id_player)
 
-        // envia a massa preparada como resposta
         return await sock.sendMessage(
             mensagem.key.remoteJid!,
-            {text: prato_criado_texto}
-        )
+            {text: texto_resposta}
+            )
 
     }
 
-    if(texto_formatado === "/padaria") {
-        // envia o comando para ser executado
-        const texto_padaria = await padaria_comando(lid, mensagem)
+    if (comando in dicionario_comandos_loja) {
 
-        // envia a massa preparada como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: texto_padaria}
-        )
+        if(comando === "/comprar gas" && argumento >= 2) {
+            let texto_resposta = ``
+            let gas_comprado = 0
 
-    }
+            const player = await construir_player(id_player)
 
-    if(texto_formatado === "/geladeira") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
+            for(let i = 1; i <= argumento; i++) {
+                const texto_gas = await comprar_gas_comando(id_player)
 
-        // envia o comando para ser executado
-        const geladeira_texto = await mostrar_geladeira_comando(id_player)
+                if(texto_gas.includes("+10")) {
+                    gas_comprado += 10 
+                } else if(texto_gas.includes("você não tem dinheiro para comprar gás") || texto_gas.includes("eu gás já está cheio, bocó")) { 
+                    texto_resposta += player.nickname + ", você comprou +" + gas_comprado + " de gás para sua padaria"
+                    texto_resposta += " mas... \n" + texto_gas
 
-        // envia as massas na geladeira como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: geladeira_texto}
-        )
-
-    }
-
-    if(texto_formatado === "/vitrine") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        // envia o comando para ser executado
-        const vitrine_texto = await mostrar_vitrine_comando(id_player)
-
-        // envia os pratos feitos como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: vitrine_texto}
-        )
-
-    }
-
-    if(texto_formatado === "/loja") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        // envia o comando para ser executado
-        const loja_texto = await loja_comando(id_player)
-
-        // envia os preços da loja do player como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: loja_texto}
-        )
-
-    }
-
-    if(texto_formatado.includes("/comprar gas")) {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        const mensagem_gas = texto_formatado.split("/comprar gas")
-
-        // quantos gás a pessoa quer comprar?
-        if (Number(mensagem_gas[1])) {            
-            const vezes_acao = Number(mensagem_gas[1])
-            let total_gas_comprado = 0
-            let mensagem_final = ""
-            let mensagem_parada = ""
-            let parou = false
-
-            const nickname = await get_player_nickname(lid)
-
-
-
-            for(let i = 0; i < vezes_acao; i++) {
-                // envia o comando para ser executado
-                const gas_texto = await comprar_gas_comando(id_player)
-
-                if(gas_texto.includes("+10")) {
-                    total_gas_comprado += 10
-                } else if (gas_texto.includes("você não tem dinheiro")|| gas_texto.includes("seu gás já está cheio")){
-                    parou  = true
-                    mensagem_parada += gas_texto
-                    break
+                    return await sock.sendMessage(
+                        mensagem.key.remoteJid!,
+                        {text: texto_resposta}
+                    )
                 }
 
-
-            }
-            
-            if(parou === false) {
-                mensagem_final += nickname + " você comprou: +" + total_gas_comprado + " de gás pra sua cozinha!!"
-            } else {
-                mensagem_final += nickname + " você comprou: +" + total_gas_comprado + "de gás. Mas..." +"\n"
-                mensagem_final += mensagem_parada
             }
 
-            // responde o player
-                await sock.sendMessage(
-                    mensagem.key.remoteJid!,
-                    {text: mensagem_final}
-                )
+            texto_resposta += player.nickname + ", você comprou + " + gas_comprado + " de gás para sua padaria!!!"
 
+            return await sock.sendMessage(
+                mensagem.key.remoteJid!,
+                {text: texto_resposta}
+            )
 
         }
+
+        // pega a função pra ser executada
+        const comando_player = dicionario_comandos_loja[comando as keyof typeof dicionario_comandos_loja]
+        const texto_resposta = await comando_player(id_player)
         
-    }
-
-    if (texto_formatado.includes("/melhorar gas")) {
-
-        const id_player = await get_player_id(lid, mensagem)
-
-        const gas_melhorado_texto = await melhorar_gas_comando(id_player)
-
-        return await sock.sendMessage(
-        mensagem.key.remoteJid!,
-        {text: gas_melhorado_texto}
-        )
-    }
-
-    if(texto_formatado === "/melhorar geladeira") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        // envia o comando para ser executado
-        const up_geladeira_texto = await melhorar_geladeira_comando(id_player)
-
-        // envia os preços da loja do player como resposta
         return await sock.sendMessage(
             mensagem.key.remoteJid!,
-            {text: up_geladeira_texto}
-        )
+            {text: texto_resposta}
+            )
 
-    }
-
-    if(texto_formatado === "/melhorar vitrine") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        // envia o comando para ser executado
-        const up_vitrine_texto = await melhorar_vitrine_comando(id_player)
-
-        // envia os preços da loja do player como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: up_vitrine_texto}
-        )
-
-    }
-
-    if(texto_formatado === "/melhorar rolo") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        // envia o comando para ser executado
-        const up_rolo_texto = await melhorar_rolo_comando(id_player)
-
-        // envia os preços da loja do player como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: up_rolo_texto}
-        )
-
-    }
-
-    if(texto_formatado === "/melhorar forno") {
-        // SE O PLAYER NÃO EXISTIR NO SQL, CRIAR
-        const id_player = await get_player_id(lid, mensagem)
-
-        // envia o comando para ser executado
-        const up_forno_texto = await melhorar_forno_comando(id_player)
-
-        // envia os preços da loja do player como resposta
-        return await sock.sendMessage(
-            mensagem.key.remoteJid!,
-            {text: up_forno_texto}
-        )
 
     }
     
