@@ -121,7 +121,7 @@ export async function status_player(player:Player) {
     mensagem += "Player: " + player.nickname + "\n"
     mensagem += "Nivel: " + player.level + "\n"
     mensagem += player.xp + "XP / " + xp_necessario +  "XP" + "\n"
-    mensagem += "Tem R$: " + player.dinheiro + " guardados." + "\n"
+    mensagem += "Tem R$:" + player.dinheiro + " guardados." + "\n"
 
     return mensagem
 }

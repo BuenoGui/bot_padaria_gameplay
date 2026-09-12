@@ -27,7 +27,6 @@ export const dicionario_comandos_player = {
     "/vitrine": mostrar_vitrine_comando,
     "/padaria": padaria_comando,
     "/status": texto_status
-    // "/nick": mudar_nick
 }
 
 export const dicionario_comandos_loja = {
@@ -46,6 +45,7 @@ export async function processar_mensagem(sock:any, mensagem:any) {
 
     const texto:string  = mensagem.message?.conversation || mensagem.message?.extendedTextMessage?.text
     if (!texto) return
+
     if (texto.substring(0, 1) !== "/") {
         console.log(mensagem)
         console.log("----------------------------------------------------------")
@@ -54,9 +54,7 @@ export async function processar_mensagem(sock:any, mensagem:any) {
         return
     }
 
-    const texto_formatado = texto.toLowerCase().trim()
-
-    if (texto_formatado === "/comandos") {
+    if (texto === "/comandos") {
         return await sock.sendMessage(
             mensagem.key.remoteJid!,
             {text: texto_comandos}
@@ -69,7 +67,7 @@ export async function processar_mensagem(sock:any, mensagem:any) {
         return console.log("sem lid, quem é você?")
     }
 
-    const dados_comando = separar_comando(texto_formatado)
+    const dados_comando = separar_comando(texto)
     const comando = dados_comando.comando
     const argumento = dados_comando.argumento
 
@@ -83,6 +81,21 @@ export async function processar_mensagem(sock:any, mensagem:any) {
     // pega o id do player
     const id_player = await get_player_id(lid, mensagem)
 
+    if (texto.includes("/nick")) {
+            
+        const mensagem_nick = texto.split("/nick")
+        const nick = String(mensagem_nick[1])
+
+        const novo_nick = await mudar_nick(nick, id_player)
+        const mensagem = novo_nick + " ficou woke e quer se chamada assim agora!"
+            
+        return await sock.sendMessage(
+                mensagem.key.remoteJid!,
+                {text: mensagem}
+        )
+            
+    }
+
     // Se o comando está no dicionario do player
     if (comando in dicionario_comandos_player) {
         
@@ -92,7 +105,7 @@ export async function processar_mensagem(sock:any, mensagem:any) {
             return await sock.sendMessage(
             mensagem.key.remoteJid!,
             {text: texto_resposta}
-        )
+            )
             
         }
 
@@ -111,14 +124,31 @@ export async function processar_mensagem(sock:any, mensagem:any) {
 
     if (comando in dicionario_comandos_loja) {
 
+        const comando_player = dicionario_comandos_loja[comando as keyof typeof dicionario_comandos_loja]
+
+
+        // ANTES DE EXPANDIR COM IF ELSE
+        // PEGA O COMANDO 
+        // COMANDO USA ARGUMENTO?
+        // SIM RODA DICIONARIO DOS ARGUMENTOS
+        // NÃO, RODA O COMANDO NORMAL
+
+
+        // SE (COMANDO NÃO USA ARGUMENTO MAS COMANDO ESTÁ COM ARGUMENTO)
+        //    EX: /MELHORAR GÁS
+        // ENTÃO {  
+        //      loop usando o argumento como max_range 
+        //      faz o comando argumento vezes        
+        //      retorna UMA mensagem falando quantas vezes foram executadas as ações 
+        // }
         if(comando === "/comprar gas" && argumento >= 2) {
             let texto_resposta = ``
             let gas_comprado = 0
 
             const player = await construir_player(id_player)
-
+            
             for(let i = 1; i <= argumento; i++) {
-                const texto_gas = await comprar_gas_comando(id_player)
+                const texto_gas = await comando_player(id_player)
 
                 if(texto_gas.includes("+10")) {
                     gas_comprado += 10 
@@ -143,8 +173,7 @@ export async function processar_mensagem(sock:any, mensagem:any) {
 
         }
 
-        // pega a função pra ser executada
-        const comando_player = dicionario_comandos_loja[comando as keyof typeof dicionario_comandos_loja]
+        // pega a função pra ser executada        
         const texto_resposta = await comando_player(id_player)
         
         return await sock.sendMessage(
