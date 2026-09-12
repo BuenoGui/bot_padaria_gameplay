@@ -4,6 +4,7 @@ create TABLE upgrades (
     nivel_gas INT NOT NULL DEFAULT 0,   
     nivel_geladeira INT NOT NULL DEFAULT 0,                                     
     nivel_vitrine INT NOT NULL DEFAULT 0,
+    nivel_braco INT NOT NULL DEFAULT 0,
     nivel_rolo INT NOT NULL DEFAULT 0,                                       
     nivel_forno INT NOT NULL DEFAULT 0, 
 

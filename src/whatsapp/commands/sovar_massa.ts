@@ -6,7 +6,7 @@ export async function sovar_massa_comando(id_player: number, id_geladeira:number
 
     const player = await construir_player(id_player)
 
-    const vitrine_texto = await sovar_massa(id_player, id_geladeira)
+    const vitrine_texto = await sovar_massa(player, id_geladeira)
     
     return player.nickname + vitrine_texto
 

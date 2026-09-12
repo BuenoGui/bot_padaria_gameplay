@@ -106,3 +106,24 @@ export async function get_id_geladeira(id_player: number, id_geladeira_player: n
 
 }
 
+export async function get_id_receita(id_geladeira: number) {
+    const id_receita_obj = await pool.query(`
+        SELECT id_receita
+        FROM geladeiras
+        WHERE id_geladeira = $1`,
+        [id_geladeira]
+        )
+
+    if(!id_receita_obj?.rows || id_receita_obj.rows.length == 0) {
+        console.log("Nenhuma massa na geladeira para ser sovada")
+        return
+    }
+
+    const { id_receita } = id_receita_obj.rows[0]
+
+    return id_receita
+
+}
+
+
+

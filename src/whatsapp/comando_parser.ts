@@ -1,21 +1,22 @@
 export const comandos_gameplay_texto = [
     "/sovar", "/assar",
     "/geladeira", "/vitrine",
-    "/padaria", "/nick" 
+    "/padaria", "/nick",
+    "/status"
 ]
 
 export const comandos_loja_texto = [
-    "/loja",
+    "/loja", "/treinar braço",
     "/comprar gas", "/melhorar gas",
     "/melhorar geladeira", "/melhorar vitrine",
-    "/melhorar rolo", "/melhorar forno" 
+    "/melhorar rolo", "/melhorar forno",
+    "/desbloquear receita"
 ]
 
 const comandos = [
     ...comandos_gameplay_texto,
     ...comandos_loja_texto
-    ]
-
+]
 
 
 export function separar_comando(texto: string) {

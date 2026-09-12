@@ -79,6 +79,10 @@ export function preco_vitrine(nivel_vitrine: number) {
     return ((nivel_vitrine + 1 ) ** 3) * (((nivel_vitrine + 4) * 2) + 62)
 }
 
+export function preco_braco(nivel_braco: number) {
+    return ((nivel_braco + 1 ) ** 2) * (((nivel_braco + 2) * 6) + 40)
+}
+
 export function preco_rolo(nivel_rolo: number) {
     return 1 + nivel_rolo ** 7 + ((1 + nivel_rolo) * 15) * ((1 + nivel_rolo) * 15)
 }

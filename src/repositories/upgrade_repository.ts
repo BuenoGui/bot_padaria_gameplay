@@ -11,6 +11,42 @@ export async function get_dados_upgrade(player: Player) {
     return resultado.rows[0];
 }
 
+export async function get_nivel_gas(player: Player) {
+    const resultado_obj = await pool.query(`
+        SELECT nivel_gas
+        FROM upgrades
+        WHERE id_player = $1
+    `, [player.id_player]);
+
+    if (resultado_obj.rows.length === 0) {
+        const nivel_gas_obj = await pool.query(`
+            INSERT INTO upgrades (id_player)
+            VALUES ($1) ON CONFLICT DO NOTHING
+            RETURNING nivel_gas`,
+            [player.id_player]
+        )
+
+        const { nivel_gas } = nivel_gas_obj.rows[0]
+
+        return nivel_gas
+
+    }
+
+    const { nivel_gas } = resultado_obj.rows[0]
+
+    return nivel_gas
+}
+
+export async function get_nivel_geladeira(player: Player) {
+    const resultado = await pool.query(`
+        SELECT nivel_geladeira
+        FROM upgrades
+        WHERE id_player = $1
+    `, [player.id_player]);
+
+    return resultado.rows[0].nivel_geladeira;
+}
+
 export async function get_nivel_vitrine(player: Player) {
     const resultado = await pool.query(`
         SELECT nivel_vitrine
@@ -75,38 +111,30 @@ export async function get_nivel_forno(player: Player) {
     return nivel_forno
 }
 
-export async function get_nivel_gas(player: Player) {
+export async function get_nivel_braco(player: Player) {
     const resultado_obj = await pool.query(`
-        SELECT nivel_gas
+        SELECT nivel_braco
         FROM upgrades
         WHERE id_player = $1
     `, [player.id_player]);
 
-    if (resultado_obj.rows.length === 0) {
-        const nivel_gas_obj = await pool.query(`
+    if(resultado_obj.rows.length === 0) {
+
+        const nivel_braco_obj = await pool.query(`
             INSERT INTO upgrades (id_player)
             VALUES ($1) ON CONFLICT DO NOTHING
-            RETURNING nivel_gas`,
+            RETURNING nivel_braco`,
             [player.id_player]
         )
 
-        const { nivel_gas } = nivel_gas_obj.rows[0]
+        const { nivel_braco } = nivel_braco_obj.rows[0]
 
-        return nivel_gas
+        return nivel_braco
 
     }
 
-    const { nivel_gas } = resultado_obj.rows[0]
+    const { nivel_braco } = resultado_obj.rows[0]
 
-    return nivel_gas
+    return nivel_braco
 }
 
-export async function get_nivel_geladeira(player: Player) {
-    const resultado = await pool.query(`
-        SELECT nivel_geladeira
-        FROM upgrades
-        WHERE id_player = $1
-    `, [player.id_player]);
-
-    return resultado.rows[0].nivel_geladeira;
-}

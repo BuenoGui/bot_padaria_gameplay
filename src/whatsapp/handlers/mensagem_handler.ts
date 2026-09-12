@@ -4,8 +4,10 @@ import { separar_comando } from "../comando_parser.js"
 import { texto_comandos } from "../commands/comandos.js"
 import { comprar_gas_comando } from "../commands/comprar_gas.js"
 import { cozinhar_comando } from "../commands/cozinhar.js"
+import { desbloquear_receita_comando } from "../commands/desbloquear_receita.js"
 import { mostrar_geladeira_comando } from "../commands/geladeira.js"
 import { loja_comando } from "../commands/loja.js"
+import { melhorar_braco_comando } from "../commands/melhorar_braco.js"
 import { melhorar_forno_comando } from "../commands/melhorar_forno.js"
 import { melhorar_gas_comando } from "../commands/melhorar_gas.js"
 import { melhorar_geladeira_comando } from "../commands/melhorar_geladeira.js"
@@ -15,25 +17,29 @@ import { mudar_nick } from "../commands/nick.js"
 import { padaria_comando } from "../commands/padaria.js"
 import { preparar_massa_comando } from "../commands/preparar_massa.js"
 import { sovar_massa_comando } from "../commands/sovar_massa.js"
+import { texto_status } from "../commands/status.js"
 import { mostrar_vitrine_comando } from "../commands/vitrine.js"
 
-const dicionario_comandos_player = {
+export const dicionario_comandos_player = {
     "/sovar": preparar_massa_comando,
     "/assar": cozinhar_comando,
     "/geladeira": mostrar_geladeira_comando,
     "/vitrine": mostrar_vitrine_comando,
     "/padaria": padaria_comando,
+    "/status": texto_status
     // "/nick": mudar_nick
 }
 
-const dicionario_comandos_loja = {
+export const dicionario_comandos_loja = {
     "/loja": loja_comando,
     "/comprar gas": comprar_gas_comando,
     "/melhorar gas": melhorar_gas_comando,
-    "melhorar geladeira": melhorar_geladeira_comando,
-    "melhorar vitrine": melhorar_vitrine_comando,
+    "/treinar braço": melhorar_braco_comando, 
+    "/melhorar geladeira": melhorar_geladeira_comando,
+    "/melhorar vitrine": melhorar_vitrine_comando,
     "/melhorar rolo": melhorar_rolo_comando,
     "/melhorar forno": melhorar_forno_comando,
+    "/desbloquear receita": desbloquear_receita_comando
 }
 
 export async function processar_mensagem(sock:any, mensagem:any) {

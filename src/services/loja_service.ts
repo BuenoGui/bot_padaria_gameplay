@@ -2,8 +2,8 @@ import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
 import { get_gas_atual } from "../repositories/padaria_repository.js";
 import { atualizar_dinheiro_upgrade, get_receitas_compradas } from "../repositories/player_repository.js";
-import { adicionar_receita_player, get_receita_bloqueada_id } from "../repositories/receita_repository.js";
-import { get_nivel_forno, get_nivel_gas, get_nivel_geladeira, get_nivel_rolo, get_nivel_vitrine } from "../repositories/upgrade_repository.js";
+import { adicionar_receita_player, get_raridade_receita, get_receita_bloqueada_id, get_receita_nome } from "../repositories/receita_repository.js";
+import { get_nivel_braco, get_nivel_forno, get_nivel_gas, get_nivel_geladeira, get_nivel_rolo, get_nivel_vitrine } from "../repositories/upgrade_repository.js";
 import { preco_vitrine, preco_geladeira, get_gas_maximo, 
         preco_gas_total, preco_forno, preco_rolo,
         preco_receita } from "../utils/Formulas.js";
@@ -84,6 +84,31 @@ export async function melhorar_gas(player: Player) {
     
     return `${player.nickname}, parabéns por comprar um botijão um pouco maior \n`
 }
+
+
+export async function melhorar_braco(player: Player) {
+
+    const nivel_braco = await get_nivel_braco(player)
+
+    const preco_upgrade = preco_gas_total(nivel_braco)
+
+    // Checa dinheiro
+    if (player.dinheiro < preco_upgrade) {
+        return player.nickname + ", você está sem dinheiro para ir a academia hoje"
+    }
+
+    // Melhora o braço
+    await pool.query(
+        "UPDATE upgrades SET nivel_braco = nivel_braco + 1 WHERE id_player = $1",
+        [player.id_player],
+    )
+
+    // Diminui dinheiro
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
+    
+    return player.nickname + ", parabéns por treinar mais!"
+}
+
 
 export async function melhorar_geladeira(player:Player) {
 
@@ -190,10 +215,14 @@ export async function desbloquear_receita(player: Player) {
     const preco_upgrade = preco_receita(await get_receitas_compradas(player))
 
     if(player.dinheiro < preco_upgrade) {
-        return `${player.nickname}, sem dinheiro para comprar novas receitas!`
+        return player.nickname + " sem dinheiro para comprar novas receitas!"
     }
 
     const id_receita_comprada = Number(await get_receita_bloqueada_id(player))
+    const nome_receita = await get_receita_nome(id_receita_comprada)
+    const raridade_receita = String(await get_raridade_receita(id_receita_comprada)).toLowerCase
     await adicionar_receita_player(player, id_receita_comprada)
-    await atualizar_dinheiro_upgrade(player, preco_upgrade) 
+    await atualizar_dinheiro_upgrade(player, preco_upgrade)
+    
+    return player.nickname + " você comprou a receita de um: " + nome_receita + "." + "Receita: " + raridade_receita
 }

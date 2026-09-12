@@ -15,6 +15,8 @@ const textos_comandos = [
     "Adiciona +10 de gás a sua padaria, para poder cozinhar outros pratos", "\n",
     "/comprar gas N", "\n",
     "/comprar gas 5, ira comprar +50 de gás, para facilitas as grandes companhias", "\n",
+    "/treinar braco", "\n",
+    "Ao sovar uma massa, você consegue sovar 1x a mais, fazendo menos repetições", "\n",
     "/melhorar gas", "\n",
     "Aumenta a capacidade de gás da sua padaria em +10, podendo assar mais pratos antes de comprar mais gás", "\n",
     "/melhorar geladeira", "\n",
@@ -24,7 +26,9 @@ const textos_comandos = [
     "/melhorar rolo", "\n",
     "Faz você conseguir preparar +1 massa por vez no /sovar", "\n",
     "/melhorar forno", "\n",
-    "Faz você conseguir preparar +1 prato por vez no /assar"
+    "Faz você conseguir preparar +1 prato por vez no /assar", "\n",
+    "/desbloquear receita", "\n",
+    "Libera uma receita nova para ser feita por você!" 
 ]
 
 let texto_formatado: string = ""

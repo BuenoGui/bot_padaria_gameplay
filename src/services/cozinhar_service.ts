@@ -24,18 +24,17 @@ export async function cozinhar(player: Player) {
         const id_massa_sorteada = massa_sorteada.id_geladeira
         const id_receita_sorteada = massa_sorteada.id_receita
 
-
         let estrela_sorteada = RNG_estrelas(player.level);
         let estrelas_texto = ''
-
-        for(let i = 0; i < estrela_sorteada; i++) {
-            estrelas_texto += "*"
-        }
 
         const vezes_sovada = await get_vezes_sovada(id_massa_sorteada)
 
         if(estrela_sorteada === 1 && vezes_sovada === 5) {
             estrela_sorteada ++
+        }
+
+        for(let i = 0; i < estrela_sorteada; i++) {
+            estrelas_texto += "★"
         }
 
         const data_criada = new Date();
@@ -51,14 +50,13 @@ export async function cozinhar(player: Player) {
         const receita_raridade = await get_raridade_receita(id_receita_sorteada)
         const xp_raridade = await get_xp_raridade(receita_raridade)
         const xp_recebido = xp_cozinhar(xp_raridade)
-
-
         
         if (espacos_vitrine_atual >= capacidade_vitrine) {
             return pratos_criados + player.nickname + " sua vitrine está CHEIA!"
         }
         
         const gas_atual = await get_gas_atual(player)
+
         if (gas_atual < gas_receita_sorteada) {
             return pratos_criados + player.nickname + " você está sem gás para a receita!"
         } else {
@@ -70,9 +68,8 @@ export async function cozinhar(player: Player) {
             = $2`,
             [gas_receita_sorteada,
             player.id_player]
-        )
+            )
         }
-        
         
         // CRIA PRATO
         await pool.query(
@@ -96,8 +93,8 @@ export async function cozinhar(player: Player) {
       
         const mensagem_xp = String(await atualizar_xp(player, xp_recebido))
 
-        mensagem += player.nickname + " cozinhou um/a: " + nome_receita + " de raridade "+ receita_raridade + "\n"
-        mensagem += "e com " + estrela_sorteada + estrelas_texto + "\n"
+        mensagem += player.nickname + " cozinhou um/a: " + nome_receita + " de raridade "+ receita_raridade + ".\n"
+        mensagem += "Com " + estrela_sorteada + " " +  estrelas_texto + "\n"
         mensagem += mensagem_xp
         mensagem += " pela destreza na cozinha!" + "\n"
         mensagem += "-------------------------------------------------------" + "\n"

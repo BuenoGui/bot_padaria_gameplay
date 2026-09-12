@@ -2,7 +2,31 @@ import pool from "../database/connection.js";
 import Player from "../entities/Player.js";
 import { xp_rankup } from "../utils/Formulas.js";
 import { get_whats_nickname } from "../whatsapp/formulas.js";
-import { status_padaria } from "./padaria_repository.js";
+
+export async function construir_player(id_player: number) {
+    const dados_player_sql = await pool.query(`
+        SELECT * 
+        FROM players
+        WHERE id_player
+        = $1`,
+        [id_player]
+        )
+
+    const dados_player = dados_player_sql.rows[0]
+
+    const player = new Player (
+        dados_player.id_player,
+        dados_player.lid,
+        dados_player.nickname,
+        dados_player.level,
+        dados_player.xp,
+        dados_player.dinheiro,
+        dados_player.receitas_compradas
+    )
+    
+    return player
+
+}
 
 export async function get_xp_player(player: Player) {
     const xp_player_obj = await pool.query(`
@@ -33,29 +57,6 @@ export async function get_level_player(player: Player) {
     return level
 }
 
-export async function get_player_id(lid_player: string, mensagem: any) {
-
-    const lid_player_obj = await pool.query(`
-        SELECT id_player
-        FROM players 
-        WHERE lid = $1`,
-        [lid_player]
-    )
-
-    if(lid_player_obj.rows.length === 0) {
-        const nickname = await get_whats_nickname(mensagem)
-
-        const id_player = await criar_player(lid_player, nickname)
-
-        return id_player
-        
-    }
-
-    const { id_player } = lid_player_obj.rows[0]
-
-    return id_player
-}
-
 export async function get_dinheiro_player(player: Player) {
     const dinheiro_player_obj = await pool.query(`
         SELECT dinheiro
@@ -81,25 +82,6 @@ export async function get_receitas_compradas(player: Player) {
     const  { receitas_compradas }  = receitas_compradas_obj.rows[0]
 
     return receitas_compradas
-
-}
-
-export async function atualizar_dinheiro_upgrade(player: Player, preco_upgrade: number) {
-
-    const dinheiro_atual_obj = await pool.query(
-        `UPDATE players
-        SET dinheiro
-        = dinheiro - $1
-        WHERE id_player
-        = $2
-        RETURNING dinheiro`,
-        [preco_upgrade, player.id_player]
-    )
-
-    const { dinheiro } = dinheiro_atual_obj.rows[0]
-
-
-    return console.log(player.id_player,"Seu dinheiro atual:", dinheiro)
 
 }
 
@@ -132,40 +114,35 @@ export async function atualizar_xp(player: Player, xp_recebido: number) {
 }
 
 export async function status_player(player:Player) {
-    // dados legaia serem passados
-    // Player: nickname
-    // Nivel: Level, XP/XP proximo nivel,
-    // Tem R$ dinheiro guardado
-    // Já desbloqueou receitas_compradas receitas
-    console.log("Player:", player.nickname)
-    console.log("Nivel:", player.level)
-    console.log(player.xp ,"XP /", xp_rankup(player.level), "XP")
-    console.log("Tem R$:" , player.dinheiro, "guardados")
+    let mensagem = ""
+
+    const xp_necessario = xp_rankup(player.level)
+
+    mensagem += "Player: " + player.nickname + "\n"
+    mensagem += "Nivel: " + player.level + "\n"
+    mensagem += player.xp + "XP / " + xp_necessario +  "XP" + "\n"
+    mensagem += "Tem R$: " + player.dinheiro + " guardados." + "\n"
+
+    return mensagem
 }
 
-export async function status(player:Player) {
-    await status_player(player)
-    console.log("-------------------------------------------------------------")
-    await status_padaria(player)
-    console.log("-------------------------------------------------------------")
-}
+export async function atualizar_dinheiro_upgrade(player: Player, preco_upgrade: number) {
 
-export async function get_player_nickname(lid_player: string) {
-
-    const player_nickname_obj = await pool.query(`
-        SELECT nickname
-        FROM players 
-        WHERE lid = $1`,
-        [lid_player]
+    const dinheiro_atual_obj = await pool.query(
+        `UPDATE players
+        SET dinheiro
+        = dinheiro - $1
+        WHERE id_player
+        = $2
+        RETURNING dinheiro`,
+        [preco_upgrade, player.id_player]
     )
 
-    if(!player_nickname_obj) {
-        return console.log("Player não criado")
-    }
+    const { dinheiro } = dinheiro_atual_obj.rows[0]
 
-    const { nickname } = player_nickname_obj.rows[0]
 
-    return nickname
+    return console.log(player.id_player,"Seu dinheiro atual:", dinheiro)
+
 }
 
 export async function get_player_lid(player: Player) {
@@ -186,32 +163,22 @@ export async function get_player_lid(player: Player) {
     return lid
 }
 
+export async function get_player_nickname(lid_player: string) {
 
-
-
-export async function construir_player(id_player: number) {
-    const dados_player_sql = await pool.query(`
-        SELECT * 
-        FROM players
-        WHERE id_player
-        = $1`,
-        [id_player]
-        )
-
-    const dados_player = dados_player_sql.rows[0]
-
-    const player = new Player (
-        dados_player.id_player,
-        dados_player.lid,
-        dados_player.nickname,
-        dados_player.level,
-        dados_player.xp,
-        dados_player.dinheiro,
-        dados_player.receitas_compradas
+    const player_nickname_obj = await pool.query(`
+        SELECT nickname
+        FROM players 
+        WHERE lid = $1`,
+        [lid_player]
     )
-    
-    return player
 
+    if(!player_nickname_obj) {
+        return console.log("Player não criado")
+    }
+
+    const { nickname } = player_nickname_obj.rows[0]
+
+    return nickname
 }
 
 export async function criar_player(lid: string, nickname: string) {
@@ -227,4 +194,27 @@ export async function criar_player(lid: string, nickname: string) {
     
     return id_player
 
+}
+
+export async function get_player_id(lid_player: string, mensagem: any) {
+
+    const lid_player_obj = await pool.query(`
+        SELECT id_player
+        FROM players 
+        WHERE lid = $1`,
+        [lid_player]
+    )
+
+    if(lid_player_obj.rows.length === 0) {
+        const nickname = await get_whats_nickname(mensagem)
+
+        const id_player = await criar_player(lid_player, nickname)
+
+        return id_player
+        
+    }
+
+    const { id_player } = lid_player_obj.rows[0]
+
+    return id_player
 }

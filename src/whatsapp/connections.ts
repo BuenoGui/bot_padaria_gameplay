@@ -60,7 +60,7 @@ export async function conectarWhatsApp() {
             
             if(remoteJid !== id_grupo) continue
             
-            processar_mensagem(sock, mensagem)
+            await processar_mensagem(sock, mensagem)
 
             }
     })
