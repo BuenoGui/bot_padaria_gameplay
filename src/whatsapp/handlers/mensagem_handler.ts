@@ -87,11 +87,11 @@ export async function processar_mensagem(sock:any, mensagem:any) {
         const nick = String(mensagem_nick[1])
 
         const novo_nick = await mudar_nick(nick, id_player)
-        const mensagem = novo_nick + " ficou woke e quer se chamada assim agora!"
+        const texto_resposta = novo_nick + " ficou woke e quer se chamada assim agora!"
             
         return await sock.sendMessage(
                 mensagem.key.remoteJid!,
-                {text: mensagem}
+                {text: texto_resposta}
         )
             
     }
